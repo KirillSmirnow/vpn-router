@@ -7,7 +7,9 @@ import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
-import vpnrouter.core.service.client.converter.ClientConverter;
+import vpnrouter.core.service.EntityConverter;
+import vpnrouter.core.service.client.Client;
+import vpnrouter.core.service.client.ClientRepository;
 
 import java.util.List;
 
@@ -18,7 +20,8 @@ import static java.util.Collections.emptyList;
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
 
-    private final ClientConverter clientConverter;
+    private final ClientRepository clientRepository;
+    private final EntityConverter<Client, ClientView> clientConverter;
 
     @Override
     public List<ClientView> getAll() {
