@@ -1,0 +1,10 @@
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 21
+      - uses: actions/checkout@v2
+      - run: ./gradlew build
