@@ -3,6 +3,7 @@ package vpnrouter.core.exception;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ElementKind;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.exception.Error;
 import vpnrouter.api.exception.ThrowableToErrorsConverter;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import static java.util.Comparator.comparing;
 
+@Slf4j
 @Component
 public class ThrowableToErrorsConverterImpl implements ThrowableToErrorsConverter {
 
@@ -58,6 +60,7 @@ public class ThrowableToErrorsConverterImpl implements ThrowableToErrorsConverte
     }
 
     private List<Error> convertDefault(Throwable throwable) {
+        log.warn("Unexpected error: {}", throwable.getMessage(), throwable);
         return List.of(
                 Error.builder()
                         .userMessage("Unexpected error \uD83D\uDE32")
