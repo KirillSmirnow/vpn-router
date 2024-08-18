@@ -3,6 +3,7 @@ package vpnrouter.web;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
@@ -44,11 +45,17 @@ public class ClientsList extends AppLayout {
     public void fillGrid() {
         List<ClientView> clients = clientService.getAll();
         if (!clients.isEmpty()) {
+            Editor<ClientView> editor = grid.getEditor();
+            Binder<ClientView> binder = new Binder<>(ClientView.class);
+
             grid.addColumn(ClientView::getIpAddress).setHeader("Ip address");
             Grid.Column<ClientView> nameColumn = grid.addColumn(ClientView::getName).setHeader("Name");
-            grid.addColumn(ClientView::isTunnelled).setHeader("Tunnelled");
 
-            Editor<ClientView> editor = grid.getEditor();
+            Grid.Column<ClientView> tunnelledColumn = grid.addColumn(ClientView::isTunnelled).setHeader("Tunnelled");
+            Checkbox tunneledCheckbox = new Checkbox();
+            binder.bind(tunneledCheckbox, ClientView::isTunnelled, ClientView::setTunnelled);
+            tunnelledColumn.setEditorComponent(tunneledCheckbox);
+
             Grid.Column<ClientView> editColumn = grid.addComponentColumn(
                     clientView -> {
                         Button editButton = new Button("Edit");
@@ -62,7 +69,6 @@ public class ClientsList extends AppLayout {
                         return editButton;
                     }
             );
-            Binder<ClientView> binder = new Binder<>(ClientView.class);
             editor.setBinder(binder);
             editor.setBuffered(true);
 
