@@ -32,12 +32,11 @@ import java.util.List;
 @Component
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
-    private VerticalLayout layout;
-    private Grid<ClientView> grid;
+    private final Grid<ClientView> grid;
 
     public ClientsList(ClientService clientService) {
         this.clientService = clientService;
-        layout = new VerticalLayout();
+        VerticalLayout layout = new VerticalLayout();
         grid = new Grid<>();
         layout.add(grid);
         addToNavbar(new H3("Clients"));
@@ -46,71 +45,83 @@ public class ClientsList extends AppLayout {
 
     @PostConstruct
     public void fillGrid() {
+        Binder<ClientView> binder = new Binder<>(ClientView.class);
+        addIpAddressColumn();
+        addNameColumn(binder);
+        addTunnelledColumn(binder);
+
         List<ClientView> clients = clientService.getAll();
         if (!clients.isEmpty()) {
-            Editor<ClientView> editor = grid.getEditor();
-            Binder<ClientView> binder = new Binder<>(ClientView.class);
-
-            grid.addColumn(ClientView::getIpAddress).setHeader("Ip address");
-            Grid.Column<ClientView> nameColumn = grid.addColumn(ClientView::getName).setHeader("Name");
-
-            Grid.Column<ClientView> tunnelledColumn = grid.addColumn(
-                    new ComponentRenderer<>(clientView -> {
-                        Checkbox checkbox = new Checkbox();
-                        checkbox.setValue(clientView.isTunnelled());
-                        checkbox.setReadOnly(true);
-                        if (clientView.isTunnelled()) {
-                            checkbox.addClassName("blue-checkbox");
-                        } else {
-                            checkbox.addClassName("gray-checkbox");
-                        }
-                        return checkbox;
-                    })
-            ).setHeader("Tunnelled");
-            Checkbox tunneledCheckbox = new Checkbox();
-            binder.bind(tunneledCheckbox, ClientView::isTunnelled, ClientView::setTunnelled);
-            tunnelledColumn.setEditorComponent(tunneledCheckbox);
-
-            Grid.Column<ClientView> editColumn = grid.addComponentColumn(
-                    clientView -> {
-                        Button editButton = new Button("Edit");
-                        editButton.addClickListener(
-                                event -> {
-                                    if (editor.isOpen()) {
-                                        editor.cancel();
-                                    }
-                                    grid.getEditor().editItem(clientView);
-                                });
-                        return editButton;
-                    }
-            );
-            editor.setBinder(binder);
-            editor.setBuffered(true);
-
-            TextField nameField = new TextField();
-            nameField.setWidthFull();
-            binder.forField(nameField).bind(ClientView::getName, ClientView::setName);
-            nameColumn.setEditorComponent(nameField);
-
-            Button saveButton = new Button("Save", event -> editor.save());
-            editor.addSaveListener(this::updateClient);
-            Button cancelButton = new Button(VaadinIcon.CLOSE.create(), event -> editor.cancel());
-            cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_ERROR);
-            HorizontalLayout actions = new HorizontalLayout(saveButton, cancelButton);
-            actions.setPadding(false);
-            editColumn.setEditorComponent(actions);
-
-            grid.addComponentColumn(
-                    clientView -> {
-                        Button deleteButton = new Button("Delete");
-                        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-                        deleteButton.addClickListener(event -> getClientDeletionDialog(clientView));
-                        return deleteButton;
-                    }
-            );
-
+            addEditButton(getEditor(binder));
+            addDeleteButton();
             grid.setItems(clients);
         }
+    }
+
+    private Editor<ClientView> getEditor(Binder<ClientView> binder) {
+        Editor<ClientView> editor = grid.getEditor();
+        editor.setBinder(binder);
+        editor.setBuffered(true);
+        return editor;
+    }
+
+    private void addIpAddressColumn() {
+        grid.addColumn(ClientView::getIpAddress).setHeader("Ip address");
+    }
+
+    private void addNameColumn(Binder<ClientView> binder) {
+        Grid.Column<ClientView> nameColumn = grid.addColumn(ClientView::getName).setHeader("Name");
+        TextField nameField = new TextField();
+        nameField.setWidthFull();
+        binder.forField(nameField).bind(ClientView::getName, ClientView::setName);
+        nameColumn.setEditorComponent(nameField);
+    }
+
+    private void addTunnelledColumn(Binder<ClientView> binder) {
+        Grid.Column<ClientView> tunnelledColumn = grid.addColumn(
+                new ComponentRenderer<>(this::getTunnelledCheckbox)
+        ).setHeader("Tunnelled");
+        Checkbox tunneledCheckbox = new Checkbox();
+        binder.bind(tunneledCheckbox, ClientView::isTunnelled, ClientView::setTunnelled);
+        tunnelledColumn.setEditorComponent(tunneledCheckbox);
+
+    }
+
+    private Checkbox getTunnelledCheckbox(ClientView clientView) {
+        Checkbox checkbox = new Checkbox();
+        checkbox.setValue(clientView.isTunnelled());
+        checkbox.setReadOnly(true);
+        if (clientView.isTunnelled()) {
+            checkbox.addClassName("blue-checkbox");
+        } else {
+            checkbox.addClassName("gray-checkbox");
+        }
+        return checkbox;
+    }
+
+    private void addEditButton(Editor<ClientView> editor) {
+        Grid.Column<ClientView> editColumn = grid.addComponentColumn(
+                clientView -> getEditButton(editor, clientView)
+        );
+        Button saveButton = new Button("Save", event -> editor.save());
+        editor.addSaveListener(this::updateClient);
+        Button cancelButton = new Button(VaadinIcon.CLOSE.create(), event -> editor.cancel());
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_ERROR);
+        HorizontalLayout actions = new HorizontalLayout(saveButton, cancelButton);
+        actions.setPadding(false);
+        editColumn.setEditorComponent(actions);
+    }
+
+    private Button getEditButton(Editor<ClientView> editor, ClientView clientView) {
+        Button editButton = new Button("Edit");
+        editButton.addClickListener(
+                event -> {
+                    if (editor.isOpen()) {
+                        editor.cancel();
+                    }
+                    grid.getEditor().editItem(clientView);
+                });
+        return editButton;
     }
 
     private void updateClient(EditorSaveEvent<ClientView> event) {
@@ -120,6 +131,17 @@ public class ClientsList extends AppLayout {
                 .tunnelled(editedClientView.isTunnelled())
                 .build();
         clientService.update(editedClientView.getIpAddress(), clientUpdate);
+    }
+
+    private void addDeleteButton() {
+        grid.addComponentColumn(
+                clientView -> {
+                    Button deleteButton = new Button("Delete");
+                    deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+                    deleteButton.addClickListener(event -> getClientDeletionDialog(clientView));
+                    return deleteButton;
+                }
+        );
     }
 
     private void getClientDeletionDialog(ClientView clientView) {
@@ -138,5 +160,4 @@ public class ClientsList extends AppLayout {
         );
         dialog.open();
     }
-
 }
