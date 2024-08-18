@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.grid.editor.EditorSaveEvent;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import jakarta.annotation.PostConstruct;
@@ -24,6 +26,7 @@ import vpnrouter.api.client.ClientView;
 
 import java.util.List;
 
+@CssImport("./styles/styles.css")
 @UIScope
 @Route("clients")
 @Component
@@ -51,7 +54,19 @@ public class ClientsList extends AppLayout {
             grid.addColumn(ClientView::getIpAddress).setHeader("Ip address");
             Grid.Column<ClientView> nameColumn = grid.addColumn(ClientView::getName).setHeader("Name");
 
-            Grid.Column<ClientView> tunnelledColumn = grid.addColumn(ClientView::isTunnelled).setHeader("Tunnelled");
+            Grid.Column<ClientView> tunnelledColumn = grid.addColumn(
+                    new ComponentRenderer<>(clientView -> {
+                        Checkbox checkbox = new Checkbox();
+                        checkbox.setValue(clientView.isTunnelled());
+                        checkbox.setReadOnly(true);
+                        if (clientView.isTunnelled()) {
+                            checkbox.addClassName("blue-checkbox");
+                        } else {
+                            checkbox.addClassName("gray-checkbox");
+                        }
+                        return checkbox;
+                    })
+            ).setHeader("Tunnelled");
             Checkbox tunneledCheckbox = new Checkbox();
             binder.bind(tunneledCheckbox, ClientView::isTunnelled, ClientView::setTunnelled);
             tunnelledColumn.setEditorComponent(tunneledCheckbox);
