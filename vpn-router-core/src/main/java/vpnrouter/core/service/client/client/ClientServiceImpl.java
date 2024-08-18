@@ -6,7 +6,7 @@ import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
-import vpnrouter.api.exception.CoreException;
+import vpnrouter.core.exception.UserException;
 import vpnrouter.core.service.EntityConverter;
 import vpnrouter.core.service.client.Client;
 import vpnrouter.core.service.client.ClientRepository;
@@ -34,7 +34,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public void add(ClientCreation creation) {
         if (clientRepository.find(creation.getIpAddress()).isPresent()) {
-            throw new CoreException("Client already exists");
+            throw new UserException("Client already exists");
         }
         var client = Client.builder()
                 .ipAddress(creation.getIpAddress())
@@ -49,7 +49,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public void update(String ipAddress, ClientUpdate update) {
         var client = clientRepository.find(ipAddress)
-                .orElseThrow(() -> new CoreException("Client not found"));
+                .orElseThrow(() -> new UserException("Client not found"));
         client.setName(update.getName());
         if (client.isTunnelled() != update.isTunnelled()) {
             client.setTunnelled(update.isTunnelled());
@@ -62,7 +62,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public void remove(String ipAddress) {
         var client = clientRepository.find(ipAddress)
-                .orElseThrow(() -> new CoreException("Client not found"));
+                .orElseThrow(() -> new UserException("Client not found"));
         client.setTunnelled(false);
         switchTunnelFor(client);
         clientRepository.deleteIfExists(ipAddress);
