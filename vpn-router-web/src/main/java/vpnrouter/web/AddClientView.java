@@ -1,6 +1,5 @@
 package vpnrouter.web;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.notification.Notification;
@@ -35,10 +34,12 @@ public class AddClientView extends VerticalLayout {
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
         addButton = new Button("Add", $ -> {
             addClient();
-            UI.getCurrent().navigate(ClientsView.class);
+            getUI().ifPresent(ui -> ui.navigate("/clients"));
             Notification.show("Client added");
         });
-        cancelButton = new Button("Cancel", $ -> UI.getCurrent().navigate(ClientsView.class));
+        cancelButton = new Button("Cancel", event -> {
+            getUI().ifPresent(ui -> ui.navigate("/clients"));
+        });
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
     }
 

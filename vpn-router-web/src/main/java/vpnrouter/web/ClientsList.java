@@ -38,9 +38,17 @@ public class ClientsList extends AppLayout {
         this.clientService = clientService;
         VerticalLayout layout = new VerticalLayout();
         grid = new Grid<>();
-        layout.add(grid);
         addToNavbar(new H3("Clients"));
         setContent(layout);
+        Button addClientButton = getAddClientButton();
+        layout.add(grid, addClientButton);
+    }
+
+    private Button getAddClientButton() {
+        Button addClientButton = new Button("Add client", event -> {
+            getUI().ifPresent(ui -> ui.navigate("/clients/add"));
+        });
+        return addClientButton;
     }
 
     @PostConstruct
