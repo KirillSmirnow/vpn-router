@@ -40,15 +40,11 @@ public class ClientsList extends AppLayout {
         grid = new Grid<>();
         addToNavbar(new H3("Clients"));
         setContent(layout);
-        Button addClientButton = getAddClientButton();
+        Button addClientButton = new Button(
+                "Add client",
+                event -> getUI().ifPresent(ui -> ui.navigate("/clients/add"))
+        );
         layout.add(grid, addClientButton);
-    }
-
-    private Button getAddClientButton() {
-        Button addClientButton = new Button("Add client", event -> {
-            getUI().ifPresent(ui -> ui.navigate("/clients/add"));
-        });
-        return addClientButton;
     }
 
     @PostConstruct
