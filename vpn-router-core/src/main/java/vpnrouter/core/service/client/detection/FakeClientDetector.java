@@ -1,8 +1,10 @@
 package vpnrouter.core.service.client.detection;
 
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import vpnrouter.core.exception.UserException;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,7 +15,9 @@ import static java.util.Collections.emptyList;
 public class FakeClientDetector implements ClientDetector {
 
     @Override
+    @SneakyThrows
     public List<String> detectIpAddresses() {
+        Thread.sleep(Duration.ofSeconds(10));
         var result = ThreadLocalRandom.current().nextInt(0, 4 + 1);
         if (result == 0) {
             throw new UserException("Something went wrong");

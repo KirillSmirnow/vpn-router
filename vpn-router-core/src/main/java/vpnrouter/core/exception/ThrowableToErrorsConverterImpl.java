@@ -18,11 +18,11 @@ public class ThrowableToErrorsConverterImpl implements ThrowableToErrorsConverte
 
     @Override
     public List<Error> convert(Throwable throwable) {
-        if (throwable instanceof UserException userException) {
-            return convert(userException);
-        }
         if (throwable instanceof ConstraintViolationException constraintViolationException) {
             return convert(constraintViolationException);
+        }
+        if (throwable instanceof UserException userException) {
+            return convert(userException);
         }
         return convertDefault(throwable);
     }
