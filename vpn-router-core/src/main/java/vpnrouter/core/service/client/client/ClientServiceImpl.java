@@ -23,7 +23,14 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<ClientView> getAll() {
         log.info("Getting all clients");
-        return emptyList();
+        return List.of(
+                ClientView.builder()
+                        .name("Name")
+                        .ipAddress("192.192.0.0")
+                        .tunnelled(true)
+                        .build()
+        );
+//        return emptyList();
     }
 
     @Override
