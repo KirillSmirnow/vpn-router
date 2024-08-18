@@ -27,7 +27,7 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
 
     @Override
     public void detectAndSave(CompletionListener completionListener) {
-        if (!detectionInProgress.compareAndSet(false, true)) {
+        if (detectionInProgress.compareAndSet(false, true)) {
             executor.submit(() -> {
                 try {
                     executeTask(completionListener);

@@ -76,6 +76,9 @@ public class ClientsStorage implements ClientRepository {
     @SneakyThrows
     private void writeFile(Clients clients) {
         var path = storageProperties.getClientsFilePath();
+        if (Files.notExists(path)) {
+            Files.createDirectories(path.getParent());
+        }
         clients.getClients().sort(comparing(Client::getLastSwitchedAt).reversed());
         objectMapper.writeValue(path.toFile(), clients);
     }
