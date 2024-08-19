@@ -11,7 +11,7 @@ public class IpAddressValidator implements ConstraintValidator<IpAddress, String
 
     @Override
     public boolean isValid(String ipAddress, ConstraintValidatorContext context) {
-        return ipAddress.matches(PATTERN) && areGroupsValid(ipAddress);
+        return ipAddress == null || ipAddress.matches(PATTERN) && areGroupsValid(ipAddress);
     }
 
     private boolean areGroupsValid(String ipAddress) {
