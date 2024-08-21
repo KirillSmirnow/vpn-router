@@ -1,5 +1,6 @@
 package vpnrouter.web;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -18,7 +19,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
@@ -32,7 +32,7 @@ import java.util.List;
 @Component
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
-    private final Grid<ClientView> grid;
+    private final Grid<ClientWebView> grid;
 
     public ClientsList(ClientService clientService) {
         this.clientService = clientService;
@@ -45,16 +45,22 @@ public class ClientsList extends AppLayout {
                 event -> getUI().ifPresent(ui -> ui.navigate("/clients/add"))
         );
         layout.add(grid, addClientButton);
+        fillGrid();
     }
 
-    @PostConstruct
-    public void fillGrid() {
-        Binder<ClientView> binder = new Binder<>(ClientView.class);
+    @Override
+    public void onAttach(AttachEvent event) {
+        List<ClientWebView> clients = map(clientService.getAll());
+        grid.setItems(clients);
+    }
+
+    private void fillGrid() {
+        Binder<ClientWebView> binder = new Binder<>(ClientWebView.class);
         addIpAddressColumn();
         addNameColumn(binder);
         addTunnelledColumn(binder);
 
-        List<ClientView> clients = clientService.getAll();
+        List<ClientWebView> clients = map(clientService.getAll());
         if (!clients.isEmpty()) {
             addEditButton(getEditor(binder));
             addDeleteButton();
@@ -62,36 +68,43 @@ public class ClientsList extends AppLayout {
         }
     }
 
-    private Editor<ClientView> getEditor(Binder<ClientView> binder) {
-        Editor<ClientView> editor = grid.getEditor();
+    private List<ClientWebView> map(List<ClientView> clients) {
+        return clients
+                .stream()
+                .map(client -> new ClientWebView(client.getIpAddress(), client.getName(), client.isTunnelled()))
+                .toList();
+    }
+
+    private Editor<ClientWebView> getEditor(Binder<ClientWebView> binder) {
+        Editor<ClientWebView> editor = grid.getEditor();
         editor.setBinder(binder);
         editor.setBuffered(true);
         return editor;
     }
 
     private void addIpAddressColumn() {
-        grid.addColumn(ClientView::getIpAddress).setHeader("Ip address");
+        grid.addColumn(ClientWebView::getIpAddress).setHeader("IP address");
     }
 
-    private void addNameColumn(Binder<ClientView> binder) {
-        Grid.Column<ClientView> nameColumn = grid.addColumn(ClientView::getName).setHeader("Name");
+    private void addNameColumn(Binder<ClientWebView> binder) {
+        Grid.Column<ClientWebView> nameColumn = grid.addColumn(ClientWebView::getName).setHeader("Name");
         TextField nameField = new TextField();
         nameField.setWidthFull();
-        binder.forField(nameField).bind(ClientView::getName, ClientView::setName);
+        binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
         nameColumn.setEditorComponent(nameField);
     }
 
-    private void addTunnelledColumn(Binder<ClientView> binder) {
-        Grid.Column<ClientView> tunnelledColumn = grid.addColumn(
+    private void addTunnelledColumn(Binder<ClientWebView> binder) {
+        Grid.Column<ClientWebView> tunnelledColumn = grid.addColumn(
                 new ComponentRenderer<>(this::getTunnelledCheckbox)
         ).setHeader("Tunnelled");
         Checkbox tunneledCheckbox = new Checkbox();
-        binder.bind(tunneledCheckbox, ClientView::isTunnelled, ClientView::setTunnelled);
+        binder.bind(tunneledCheckbox, ClientWebView::isTunnelled, ClientWebView::setTunnelled);
         tunnelledColumn.setEditorComponent(tunneledCheckbox);
 
     }
 
-    private Checkbox getTunnelledCheckbox(ClientView clientView) {
+    private Checkbox getTunnelledCheckbox(ClientWebView clientView) {
         Checkbox checkbox = new Checkbox();
         checkbox.setValue(clientView.isTunnelled());
         checkbox.setReadOnly(true);
@@ -103,8 +116,8 @@ public class ClientsList extends AppLayout {
         return checkbox;
     }
 
-    private void addEditButton(Editor<ClientView> editor) {
-        Grid.Column<ClientView> editColumn = grid.addComponentColumn(
+    private void addEditButton(Editor<ClientWebView> editor) {
+        Grid.Column<ClientWebView> editColumn = grid.addComponentColumn(
                 clientView -> getEditButton(editor, clientView)
         );
         Button saveButton = new Button("Save", event -> editor.save());
@@ -116,7 +129,7 @@ public class ClientsList extends AppLayout {
         editColumn.setEditorComponent(actions);
     }
 
-    private Button getEditButton(Editor<ClientView> editor, ClientView clientView) {
+    private Button getEditButton(Editor<ClientWebView> editor, ClientWebView clientView) {
         Button editButton = new Button("Edit");
         editButton.addClickListener(
                 event -> {
@@ -128,8 +141,8 @@ public class ClientsList extends AppLayout {
         return editButton;
     }
 
-    private void updateClient(EditorSaveEvent<ClientView> event) {
-        ClientView editedClientView = event.getItem();
+    private void updateClient(EditorSaveEvent<ClientWebView> event) {
+        ClientWebView editedClientView = event.getItem();
         ClientUpdate clientUpdate = ClientUpdate.builder()
                 .name(editedClientView.getName())
                 .tunnelled(editedClientView.isTunnelled())
@@ -148,7 +161,7 @@ public class ClientsList extends AppLayout {
         );
     }
 
-    private void getClientDeletionDialog(ClientView clientView) {
+    private void getClientDeletionDialog(ClientWebView clientView) {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader("Delete client");
         dialog.setText("Do you really want to delete %s client?".formatted(clientView.getName()));
@@ -159,7 +172,7 @@ public class ClientsList extends AppLayout {
         dialog.addConfirmListener(
                 event -> {
                     clientService.remove(clientView.getIpAddress());
-                    grid.setItems(clientService.getAll());
+                    grid.setItems(map(clientService.getAll()));
                 }
         );
         dialog.open();
