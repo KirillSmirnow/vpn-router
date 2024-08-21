@@ -8,6 +8,7 @@ import java.util.Set;
 @Data
 @ConfigurationProperties("alice")
 public class AliceProperties {
+    private final String secret;
     private final String skillId;
     private final String userId;
     private final Set<String> applicationIds;

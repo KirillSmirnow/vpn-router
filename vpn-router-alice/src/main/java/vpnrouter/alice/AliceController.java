@@ -3,11 +3,7 @@ package vpnrouter.alice;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -23,13 +19,13 @@ public class AliceController {
     }
 
     @PostMapping
-    public AliceResponse alice(@RequestBody JsonNode rawRequest) {
+    public AliceResponse alice(@RequestParam String secret, @RequestBody JsonNode rawRequest) {
         var request = new AliceRequest(rawRequest);
         log.info("***");
         log.info("Request: {}", request);
         log.info("Raw text: '{}'", request.getText("/request/command").orElseThrow());
         try {
-            authorize(request);
+            authorize(secret, request);
             return process(request);
         } catch (Exception e) {
             log.error("Failed to process Alice request: {}", e.getMessage(), e);
@@ -37,8 +33,9 @@ public class AliceController {
         }
     }
 
-    private void authorize(AliceRequest request) {
+    private void authorize(String secret, AliceRequest request) {
         aliceAuthorizer.authorize(
+                secret,
                 request.getText("/session/skill_id").orElseThrow(),
                 request.getText("/session/user/user_id").orElseThrow(),
                 request.getText("/session/application/application_id").orElseThrow()
