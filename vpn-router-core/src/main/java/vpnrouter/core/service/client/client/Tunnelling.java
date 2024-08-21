@@ -1,8 +1,8 @@
 package vpnrouter.core.service.client.client;
 
+import java.util.Set;
+
 public interface Tunnelling {
 
-    void switchOnFor(String ipAddress);
-
-    void switchOffFor(String ipAddress);
+    void switchOnOnlyFor(Set<String> ipAddresses);
 }
