@@ -12,6 +12,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven(url = "https://vaadin.com/nexus/content/repositories/vaadin-addons/")
     }
 
     dependencies {
