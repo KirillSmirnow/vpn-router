@@ -43,7 +43,7 @@ public class AddClientView extends VerticalLayout {
 
     private void addClient() {
         var clientCreation = ClientCreation.builder()
-                .ipAddress(ipAddressField.getValue())
+                .ipAddress(ipAddressField.getOptionalValue().orElse(null))
                 .name(nameField.getOptionalValue().orElse(null))
                 .tunnelled(tunnelledCheckbox.getValue())
                 .build();

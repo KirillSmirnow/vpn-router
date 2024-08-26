@@ -1,5 +1,6 @@
 package vpnrouter.web;
 
+import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
@@ -58,7 +59,7 @@ public class ClientsList extends AppLayout {
         Binder<ClientWebView> binder = new Binder<>(ClientWebView.class);
         addIpAddressColumn();
         addNameColumn(binder);
-        addTunnelledColumn(binder);
+        addTunnelledToggleSwitch(binder);
 
         List<ClientWebView> clients = map(clientService.getAll());
         if (!clients.isEmpty()) {
@@ -94,26 +95,28 @@ public class ClientsList extends AppLayout {
         nameColumn.setEditorComponent(nameField);
     }
 
-    private void addTunnelledColumn(Binder<ClientWebView> binder) {
+    private void addTunnelledToggleSwitch(Binder<ClientWebView> binder) {
         Grid.Column<ClientWebView> tunnelledColumn = grid.addColumn(
-                new ComponentRenderer<>(this::getTunnelledCheckbox)
+                new ComponentRenderer<>(this::getTunnelledToggleSwitch)
         ).setHeader("Tunnelled");
         Checkbox tunneledCheckbox = new Checkbox();
         binder.bind(tunneledCheckbox, ClientWebView::isTunnelled, ClientWebView::setTunnelled);
         tunnelledColumn.setEditorComponent(tunneledCheckbox);
-
     }
 
-    private Checkbox getTunnelledCheckbox(ClientWebView clientView) {
-        Checkbox checkbox = new Checkbox();
-        checkbox.setValue(clientView.isTunnelled());
-        checkbox.setReadOnly(true);
-        if (clientView.isTunnelled()) {
-            checkbox.addClassName("blue-checkbox");
-        } else {
-            checkbox.addClassName("gray-checkbox");
-        }
-        return checkbox;
+    private ToggleButton getTunnelledToggleSwitch(ClientWebView client) {
+        ToggleButton toggle = new ToggleButton();
+        toggle.addValueChangeListener(
+                event -> {
+                    boolean isTunnelled = event.getValue();
+                    ClientUpdate clientUpdate = ClientUpdate.builder()
+                            .name(client.getName())
+                            .tunnelled(isTunnelled)
+                            .build();
+                    clientService.update(client.getIpAddress(), clientUpdate);
+                }
+        );
+        return toggle;
     }
 
     private void addEditButton(Editor<ClientWebView> editor) {
