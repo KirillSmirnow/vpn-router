@@ -2,18 +2,17 @@ package vpnrouter.web;
 
 import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.grid.editor.EditorSaveEvent;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -58,14 +57,25 @@ public class ClientsList extends AppLayout {
     private void fillGrid() {
         Binder<ClientWebView> binder = new Binder<>(ClientWebView.class);
         addIpAddressColumn();
-        addNameColumn(binder);
-        addTunnelledToggleSwitch(binder);
+        Editor<ClientWebView> editor = grid.getEditor();
+        editor.setBuffered(false);
+        editor.setBinder(binder);
+        addNameColumn(binder, editor);
+        addTunnelledToggleSwitch();
+        editor.addSaveListener(this::updateClient);
+        editor.addOpenListener(event -> getUI().ifPresent(ui -> ui.addShortcutListener(editor::save, Key.ENTER)));
 
         List<ClientWebView> clients = map(clientService.getAll());
         if (!clients.isEmpty()) {
-            addEditButton(getEditor(binder));
             addDeleteButton();
             grid.setItems(clients);
+            grid.addItemDoubleClickListener(e -> {
+                editor.editItem(e.getItem());
+                com.vaadin.flow.component.Component editorComponent = e.getColumn().getEditorComponent();
+                if (editorComponent instanceof Focusable) {
+                    ((Focusable) editorComponent).focus();
+                }
+            });
         }
     }
 
@@ -76,36 +86,32 @@ public class ClientsList extends AppLayout {
                 .toList();
     }
 
-    private Editor<ClientWebView> getEditor(Binder<ClientWebView> binder) {
-        Editor<ClientWebView> editor = grid.getEditor();
-        editor.setBinder(binder);
-        editor.setBuffered(true);
-        return editor;
-    }
-
     private void addIpAddressColumn() {
         grid.addColumn(ClientWebView::getIpAddress).setHeader("IP address");
     }
 
-    private void addNameColumn(Binder<ClientWebView> binder) {
+    private void addNameColumn(Binder<ClientWebView> binder, Editor<ClientWebView> editor) {
         Grid.Column<ClientWebView> nameColumn = grid.addColumn(ClientWebView::getName).setHeader("Name");
         TextField nameField = new TextField();
         nameField.setWidthFull();
+        addCloseHandler(nameField, editor);
         binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
+        nameField.addKeyPressListener(Key.ENTER, event -> editor.save());
         nameColumn.setEditorComponent(nameField);
     }
 
-    private void addTunnelledToggleSwitch(Binder<ClientWebView> binder) {
-        Grid.Column<ClientWebView> tunnelledColumn = grid.addColumn(
-                new ComponentRenderer<>(this::getTunnelledToggleSwitch)
-        ).setHeader("Tunnelled");
-        Checkbox tunneledCheckbox = new Checkbox();
-        binder.bind(tunneledCheckbox, ClientWebView::isTunnelled, ClientWebView::setTunnelled);
-        tunnelledColumn.setEditorComponent(tunneledCheckbox);
+    private static void addCloseHandler(com.vaadin.flow.component.Component textField, Editor<ClientWebView> editor) {
+        textField.getElement().addEventListener("keydown", e -> editor.cancel())
+                .setFilter("event.code === 'Escape'");
+    }
+
+    private void addTunnelledToggleSwitch() {
+        grid.addColumn(new ComponentRenderer<>(this::getTunnelledToggleSwitch)).setHeader("Tunnelled");
     }
 
     private ToggleButton getTunnelledToggleSwitch(ClientWebView client) {
         ToggleButton toggle = new ToggleButton();
+        toggle.setValue(client.isTunnelled());
         toggle.addValueChangeListener(
                 event -> {
                     boolean isTunnelled = event.getValue();
@@ -117,31 +123,6 @@ public class ClientsList extends AppLayout {
                 }
         );
         return toggle;
-    }
-
-    private void addEditButton(Editor<ClientWebView> editor) {
-        Grid.Column<ClientWebView> editColumn = grid.addComponentColumn(
-                clientView -> getEditButton(editor, clientView)
-        );
-        Button saveButton = new Button("Save", event -> editor.save());
-        editor.addSaveListener(this::updateClient);
-        Button cancelButton = new Button(VaadinIcon.CLOSE.create(), event -> editor.cancel());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_ERROR);
-        HorizontalLayout actions = new HorizontalLayout(saveButton, cancelButton);
-        actions.setPadding(false);
-        editColumn.setEditorComponent(actions);
-    }
-
-    private Button getEditButton(Editor<ClientWebView> editor, ClientWebView clientView) {
-        Button editButton = new Button("Edit");
-        editButton.addClickListener(
-                event -> {
-                    if (editor.isOpen()) {
-                        editor.cancel();
-                    }
-                    grid.getEditor().editItem(clientView);
-                });
-        return editButton;
     }
 
     private void updateClient(EditorSaveEvent<ClientWebView> event) {
