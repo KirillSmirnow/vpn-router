@@ -32,7 +32,7 @@ import java.util.*;
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
     private final Grid<ClientWebView> grid;
-    private static Map<String, ClientWebView> c = new HashMap<>();
+    private static ClientWebView cachedClient;
 
     public ClientsList(ClientService clientService) {
         this.clientService = clientService;
@@ -98,24 +98,24 @@ public class ClientsList extends AppLayout {
         nameColumn.setEditorComponent(nameField);
         grid.addSelectionListener(event -> {
             try {
-                ClientWebView client = event.getFirstSelectedItem().get();
-                c.put("s", client);
-                System.out.println("D");
-            } catch (NoSuchElementException e) {
-                System.out.println("E");
+                cachedClient = event.getAllSelectedItems().stream().toList().getLast();
+                if (cachedClient == null) {
+                    throw new IllegalArgumentException("null client");
+                }
+            } catch (Exception  e) {
+                System.out.println(e.getMessage());
             }
         });
         nameField.addValueChangeListener(
                 event -> {
                     String name = event.getValue();
-                    String ipAddress = c.get("s").getIpAddress();
-                    boolean isTunnelled = c.get("s").isTunnelled();
+                    String ipAddress = cachedClient.getIpAddress();
+                    boolean isTunnelled = cachedClient.isTunnelled();
                     ClientUpdate clientUpdate = ClientUpdate.builder()
                             .tunnelled(isTunnelled)
                             .name(name)
                             .build();
                     clientService.update(ipAddress, clientUpdate);
-                    System.out.println("D");
                 }
         );
     }
