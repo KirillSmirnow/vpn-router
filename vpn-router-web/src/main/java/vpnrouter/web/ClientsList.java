@@ -24,7 +24,6 @@ import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @CssImport("./styles/styles.css")
 @UIScope
@@ -75,15 +74,8 @@ public class ClientsList extends AppLayout {
                 });
         grid.addSelectionListener(
                 event -> {
-                    try {
+                    if (!event.getAllSelectedItems().isEmpty()) {
                         cachedClient = event.getAllSelectedItems().stream().toList().getLast();
-                        if (cachedClient == null) {
-                            throw new IllegalArgumentException("Selected client is null");
-                        }
-                    } catch (NoSuchElementException e) {
-                        log.error("No selected items");
-                    } catch (IllegalArgumentException e) {
-                        log.error(e.getMessage());
                     }
                 }
         );
