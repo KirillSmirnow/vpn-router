@@ -2,6 +2,7 @@ package vpnrouter.web;
 
 import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
@@ -10,7 +11,6 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
-import com.vaadin.flow.component.grid.editor.EditorSaveEvent;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -18,17 +18,18 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @CssImport("./styles/styles.css")
 @UIScope
 @Route("clients")
-@Component
+@Slf4j
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
     private final Grid<ClientWebView> grid;
@@ -40,12 +41,16 @@ public class ClientsList extends AppLayout {
         grid = new Grid<>();
         addToNavbar(new H3("Clients"));
         setContent(layout);
-        Button addClientButton = new Button(
+        Button addClientButton = getAddClientButton();
+        layout.add(grid, addClientButton);
+        fillGrid();
+    }
+
+    private Button getAddClientButton() {
+        return new Button(
                 "Add client",
                 event -> getUI().ifPresent(ui -> ui.navigate("/clients/add"))
         );
-        layout.add(grid, addClientButton);
-        fillGrid();
     }
 
     @Override
@@ -56,20 +61,36 @@ public class ClientsList extends AppLayout {
 
     private void fillGrid() {
         Binder<ClientWebView> binder = new Binder<>(ClientWebView.class);
-        addIpAddressColumn();
         Editor<ClientWebView> editor = grid.getEditor();
         editor.setBuffered(false);
         editor.setBinder(binder);
-        editor.addSaveListener(this::updateClient);
+
+        grid.addItemDoubleClickListener(
+                event -> {
+                    editor.editItem(event.getItem());
+                    Component editorComponent = event.getColumn().getEditorComponent();
+                    if (editorComponent instanceof Focusable) {
+                        ((Focusable<?>) editorComponent).focus();
+                    }
+                });
+        grid.addSelectionListener(
+                event -> {
+                    try {
+                        cachedClient = event.getAllSelectedItems().stream().toList().getLast();
+                        if (cachedClient == null) {
+                            throw new IllegalArgumentException("Selected client is null");
+                        }
+                    } catch (NoSuchElementException e) {
+                        log.error("No selected items");
+                    } catch (IllegalArgumentException e) {
+                        log.error(e.getMessage());
+                    }
+                }
+        );
+
+        addIpAddressColumn();
         addNameColumn(binder, editor);
         addTunnelledToggleSwitch();
-        grid.addItemDoubleClickListener(e -> {
-            editor.editItem(e.getItem());
-            com.vaadin.flow.component.Component editorComponent = e.getColumn().getEditorComponent();
-            if (editorComponent instanceof Focusable) {
-                ((Focusable) editorComponent).focus();
-            }
-        });
 
         List<ClientWebView> clients = map(clientService.getAll());
         if (!clients.isEmpty()) {
@@ -81,7 +102,13 @@ public class ClientsList extends AppLayout {
     private List<ClientWebView> map(List<ClientView> clients) {
         return clients
                 .stream()
-                .map(client -> new ClientWebView(client.getIpAddress(), client.getName(), client.isTunnelled()))
+                .map(
+                        client -> ClientWebView.builder()
+                                .ipAddress(client.getIpAddress())
+                                .name(client.getName())
+                                .tunnelled(client.isTunnelled())
+                                .build()
+                )
                 .toList();
     }
 
@@ -95,33 +122,21 @@ public class ClientsList extends AppLayout {
         nameField.setWidthFull();
         addCloseHandler(nameField, editor);
         binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
-        nameColumn.setEditorComponent(nameField);
-        grid.addSelectionListener(event -> {
-            try {
-                cachedClient = event.getAllSelectedItems().stream().toList().getLast();
-                if (cachedClient == null) {
-                    throw new IllegalArgumentException("null client");
-                }
-            } catch (Exception  e) {
-                System.out.println(e.getMessage());
-            }
-        });
         nameField.addValueChangeListener(
                 event -> {
-                    String name = event.getValue();
-                    String ipAddress = cachedClient.getIpAddress();
-                    boolean isTunnelled = cachedClient.isTunnelled();
                     ClientUpdate clientUpdate = ClientUpdate.builder()
-                            .tunnelled(isTunnelled)
-                            .name(name)
+                            .tunnelled(cachedClient.isTunnelled())
+                            .name(event.getValue())
                             .build();
-                    clientService.update(ipAddress, clientUpdate);
+                    clientService.update(cachedClient.getIpAddress(), clientUpdate);
                 }
         );
+        nameColumn.setEditorComponent(nameField);
     }
 
-    private static void addCloseHandler(com.vaadin.flow.component.Component textField, Editor<ClientWebView> editor) {
-        textField.getElement().addEventListener("keydown", e -> editor.cancel())
+    private static void addCloseHandler(Component textField, Editor<ClientWebView> editor) {
+        textField.getElement()
+                .addEventListener("keydown", event -> editor.cancel())
                 .setFilter("event.code === 'Escape'");
     }
 
@@ -143,15 +158,6 @@ public class ClientsList extends AppLayout {
                 }
         );
         return toggle;
-    }
-
-    private void updateClient(EditorSaveEvent<ClientWebView> event) {
-        ClientWebView editedClientView = event.getItem();
-        ClientUpdate clientUpdate = ClientUpdate.builder()
-                .name(editedClientView.getName())
-                .tunnelled(editedClientView.isTunnelled())
-                .build();
-        clientService.update(editedClientView.getIpAddress(), clientUpdate);
     }
 
     private void addDeleteButton() {
