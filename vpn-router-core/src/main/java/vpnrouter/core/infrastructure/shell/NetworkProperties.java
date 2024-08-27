@@ -7,6 +7,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("network")
 public class NetworkProperties {
     private final String address;
-    private final int maxClients;
     private final String vpnInterface;
 }

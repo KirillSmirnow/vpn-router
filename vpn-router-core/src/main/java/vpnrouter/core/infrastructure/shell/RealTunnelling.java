@@ -8,13 +8,15 @@ import vpnrouter.core.service.client.client.Tunnelling;
 
 import java.util.Set;
 
+import static java.util.stream.Collectors.joining;
+
 @Primary
 @Component
 @Profile("prod")
 @RequiredArgsConstructor
 public class RealTunnelling implements Tunnelling {
 
-    private static final int FIRST_TABLE = 1000;
+    private static final int TABLE = 7373;
 
     private final NetworkProperties networkProperties;
     private final ShellExecutor shellExecutor;
@@ -22,28 +24,23 @@ public class RealTunnelling implements Tunnelling {
     @Override
     public void switchOnOnlyFor(Set<String> ipAddresses) {
         shellExecutor.execute(
-                buildSwitchOffCommand() + buildSwitchOnCommand(ipAddresses)
+                buildResetTableCommand() + buildSwitchOffCommand() + buildSwitchOnCommand(ipAddresses)
         );
     }
 
+    private String buildResetTableCommand() {
+        var cleanCommand = "ip route flush table %d\n".formatted(TABLE);
+        var initializeCommand = "ip route add default dev %s table %d\n".formatted(networkProperties.getVpnInterface(), TABLE);
+        return cleanCommand + initializeCommand;
+    }
+
     private String buildSwitchOffCommand() {
-        var builder = new StringBuilder();
-        var maxClients = networkProperties.getMaxClients();
-        for (var table = FIRST_TABLE; table < FIRST_TABLE + maxClients; table++) {
-            builder.append("ip rule del lookup %s\n".formatted(table));
-        }
-        return builder.toString();
+        return "while ip rule delete table %d; do echo 'removed'; done\n".formatted(TABLE);
     }
 
     private String buildSwitchOnCommand(Set<String> ipAddresses) {
-        var builder = new StringBuilder();
-        var vpnInterface = networkProperties.getVpnInterface();
-        var table = FIRST_TABLE;
-        for (var ipAddress : ipAddresses) {
-            builder.append("ip rule add from %s lookup %s\n".formatted(ipAddress, table));
-            builder.append("ip route add default via %s table %s\n".formatted(vpnInterface, table));
-            table++;
-        }
-        return builder.toString();
+        return ipAddresses.stream()
+                .map(ipAddress -> "ip rule add from %s table %s\n".formatted(ipAddress, TABLE))
+                .collect(joining());
     }
 }
