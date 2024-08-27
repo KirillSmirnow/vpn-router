@@ -3,7 +3,6 @@ package vpnrouter.web;
 import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -24,7 +23,7 @@ import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
 
-import java.util.List;
+import java.util.*;
 
 @CssImport("./styles/styles.css")
 @UIScope
@@ -33,6 +32,7 @@ import java.util.List;
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
     private final Grid<ClientWebView> grid;
+    private static Map<String, ClientWebView> c = new HashMap<>();
 
     public ClientsList(ClientService clientService) {
         this.clientService = clientService;
@@ -60,22 +60,21 @@ public class ClientsList extends AppLayout {
         Editor<ClientWebView> editor = grid.getEditor();
         editor.setBuffered(false);
         editor.setBinder(binder);
+        editor.addSaveListener(this::updateClient);
         addNameColumn(binder, editor);
         addTunnelledToggleSwitch();
-        editor.addSaveListener(this::updateClient);
-        editor.addOpenListener(event -> getUI().ifPresent(ui -> ui.addShortcutListener(editor::save, Key.ENTER)));
+        grid.addItemDoubleClickListener(e -> {
+            editor.editItem(e.getItem());
+            com.vaadin.flow.component.Component editorComponent = e.getColumn().getEditorComponent();
+            if (editorComponent instanceof Focusable) {
+                ((Focusable) editorComponent).focus();
+            }
+        });
 
         List<ClientWebView> clients = map(clientService.getAll());
         if (!clients.isEmpty()) {
             addDeleteButton();
             grid.setItems(clients);
-            grid.addItemDoubleClickListener(e -> {
-                editor.editItem(e.getItem());
-                com.vaadin.flow.component.Component editorComponent = e.getColumn().getEditorComponent();
-                if (editorComponent instanceof Focusable) {
-                    ((Focusable) editorComponent).focus();
-                }
-            });
         }
     }
 
@@ -96,8 +95,29 @@ public class ClientsList extends AppLayout {
         nameField.setWidthFull();
         addCloseHandler(nameField, editor);
         binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
-        nameField.addKeyPressListener(Key.ENTER, event -> editor.save());
         nameColumn.setEditorComponent(nameField);
+        grid.addSelectionListener(event -> {
+            try {
+                ClientWebView client = event.getFirstSelectedItem().get();
+                c.put("s", client);
+                System.out.println("D");
+            } catch (NoSuchElementException e) {
+                System.out.println("E");
+            }
+        });
+        nameField.addValueChangeListener(
+                event -> {
+                    String name = event.getValue();
+                    String ipAddress = c.get("s").getIpAddress();
+                    boolean isTunnelled = c.get("s").isTunnelled();
+                    ClientUpdate clientUpdate = ClientUpdate.builder()
+                            .tunnelled(isTunnelled)
+                            .name(name)
+                            .build();
+                    clientService.update(ipAddress, clientUpdate);
+                    System.out.println("D");
+                }
+        );
     }
 
     private static void addCloseHandler(com.vaadin.flow.component.Component textField, Editor<ClientWebView> editor) {
