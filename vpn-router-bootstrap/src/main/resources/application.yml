@@ -2,3 +2,4 @@ storage:
   clients-file-path: ${HOME}/vpn-router/storage/clients.yml
 network:
   address: 192.168.0.0/24
+  vpn-interface: wg
