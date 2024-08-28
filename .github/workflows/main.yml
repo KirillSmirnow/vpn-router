@@ -3,8 +3,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: 21
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: ./gradlew build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jar
+          path: vpn-router-bootstrap/build/libs/vpn-router-bootstrap.jar
+  deploy:
+    if: github.ref_name == 'main'
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+          path: docker/
+      - run: docker compose -p vpn-router up -d --build
+        working-directory: docker
