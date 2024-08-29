@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    restart: always
+    ports:
+      - 127.0.0.1:20100:8080
