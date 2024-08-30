@@ -29,12 +29,12 @@ import java.util.List;
 @UIScope
 @Route("")
 @Slf4j
-public class ClientsView extends AppLayout {
+public class ClientsPage extends AppLayout {
     private final ClientService clientService;
     private final ClientStorage clientStorage;
     private final Grid<ClientWebView> grid;
 
-    public ClientsView(ClientService clientService, ClientStorage clientStorage) {
+    public ClientsPage(ClientService clientService, ClientStorage clientStorage) {
         this.clientService = clientService;
         this.clientStorage = clientStorage;
         VerticalLayout layout = new VerticalLayout();
