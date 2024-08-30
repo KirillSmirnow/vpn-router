@@ -34,7 +34,7 @@ public class AddClientView extends VerticalLayout {
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
         addButton = new Button("Add", $ -> {
             addClient();
-            getUI().ifPresent(ui -> ui.navigate("/clients"));
+            getUI().ifPresent(ui -> ui.navigate(""));
             Notification.show("Client added");
         });
         cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("/clients")));

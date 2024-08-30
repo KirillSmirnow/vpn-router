@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @Builder
 @EqualsAndHashCode(of = "ipAddress")
 public class ClientWebView {
-    private String ipAddress;
+    private final String ipAddress;
     private String name;
     private boolean tunnelled;
 }
