@@ -27,7 +27,7 @@ import java.util.List;
 
 @CssImport("./styles/styles.css")
 @UIScope
-@Route("clients")
+@Route("")
 @Slf4j
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
