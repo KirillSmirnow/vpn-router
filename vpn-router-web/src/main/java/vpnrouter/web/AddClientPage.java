@@ -37,7 +37,7 @@ public class AddClientPage extends VerticalLayout {
             getUI().ifPresent(ui -> ui.navigate(""));
             Notification.show("Client added");
         });
-        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("/clients")));
+        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
     }
 
