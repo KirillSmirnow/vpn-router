@@ -32,7 +32,7 @@ import java.util.List;
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
     private final Grid<ClientWebView> grid;
-    private static ClientWebView cachedClient;
+    private ClientWebView cachedClient;
 
     public ClientsList(ClientService clientService) {
         this.clientService = clientService;
@@ -74,8 +74,8 @@ public class ClientsList extends AppLayout {
                 });
         grid.addSelectionListener(
                 event -> {
-                    if (!event.getAllSelectedItems().isEmpty()) {
-                        cachedClient = event.getAllSelectedItems().stream().toList().getLast();
+                    if (event.getFirstSelectedItem().isPresent()) {
+                        cachedClient = event.getFirstSelectedItem().get();
                     }
                 }
         );
