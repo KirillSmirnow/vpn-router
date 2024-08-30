@@ -27,15 +27,16 @@ import java.util.List;
 
 @CssImport("./styles/styles.css")
 @UIScope
-@Route("clients")
+@Route("")
 @Slf4j
 public class ClientsList extends AppLayout {
     private final ClientService clientService;
+    private final ClientStorage clientStorage;
     private final Grid<ClientWebView> grid;
-    private ClientWebView cachedClient;
 
-    public ClientsList(ClientService clientService) {
+    public ClientsList(ClientService clientService, ClientStorage clientStorage) {
         this.clientService = clientService;
+        this.clientStorage = clientStorage;
         VerticalLayout layout = new VerticalLayout();
         grid = new Grid<>();
         addToNavbar(new H3("Clients"));
@@ -75,7 +76,9 @@ public class ClientsList extends AppLayout {
         grid.addSelectionListener(
                 event -> {
                     if (event.getFirstSelectedItem().isPresent()) {
-                        cachedClient = event.getFirstSelectedItem().get();
+                        clientStorage.removeAll();
+                        ClientWebView cachedClient = event.getFirstSelectedItem().get();
+                        clientStorage.setValue(cachedClient);
                     }
                 }
         );
@@ -116,6 +119,7 @@ public class ClientsList extends AppLayout {
         binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
         nameField.addValueChangeListener(
                 event -> {
+                    ClientWebView cachedClient = clientStorage.getValue();
                     ClientUpdate clientUpdate = ClientUpdate.builder()
                             .tunnelled(cachedClient.isTunnelled())
                             .name(event.getValue())
