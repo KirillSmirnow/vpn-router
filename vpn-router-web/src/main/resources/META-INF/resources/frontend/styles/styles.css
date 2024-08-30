@@ -1,0 +1,15 @@
+.blue-checkbox::part(checkbox) {
+    background-color: blue;
+    border-color: blue;
+}
+
+.gray-checkbox::part(checkbox) {
+    background-color: white;
+    border-color: gray;
+}
+
+.blue-checkbox[readonly]::part(checkbox),
+.gray-checkbox[readonly]::part(checkbox) {
+    opacity: 1;
+    pointer-events: none;
+}
