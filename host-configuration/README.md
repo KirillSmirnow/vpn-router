@@ -14,7 +14,7 @@ network:
     enp0s3:
       dhcp4: false
       addresses: [ 192.168.0.33/24 ]
-      gateway4: 192.168.0.30
+      gateway4: 192.168.0.1
       nameservers:
         addresses: [ 8.8.8.8 ]
   version: 2
@@ -24,9 +24,9 @@ network:
 
 * `echo 1 >/proc/sys/net/ipv4/ip_forward`
 * `iptables -t filter --policy FORWARD ACCEPT`
-* `iptables -t nat -A POSTROUTING -j MASQUERADE`
+* `iptables -t nat -A POSTROUTING -o wg -j MASQUERADE`
 
 ## Install WireGuard
 
-* Install tunnel configuration
+* Install tunnel configuration (interface `wg`)
 * In the configuration, set `Table = off`
