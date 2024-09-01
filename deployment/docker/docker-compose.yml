@@ -6,6 +6,7 @@ services:
       HEAP:
       SERVER_PORT:
       SPRING_PROFILES_ACTIVE:
+    privileged: ${PRIVILEGED:-false}
     network_mode: ${NETWORK_MODE:-bridge}
     ports:
       - 127.0.0.1:20100:8080

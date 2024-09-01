@@ -20,4 +20,5 @@
         HEAP: "{{heap}}"
         SERVER_PORT: "{{public_port}}"
         SPRING_PROFILES_ACTIVE: "{{profiles}}"
+        PRIVILEGED: true
         NETWORK_MODE: host
