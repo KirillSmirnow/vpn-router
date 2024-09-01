@@ -22,6 +22,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar
-          path: docker/
+          path: deployment/docker/
       - run: docker compose -p vpn-router up -d --build
-        working-directory: docker
+        working-directory: deployment/docker/

@@ -1,0 +1,22 @@
+- hosts: all
+  tasks:
+    - name: Include variables
+      include_vars:
+        file: variables.yml
+    - name: Copy sources
+      copy:
+        src: docker
+        dest: "{{working_directory}}"
+    - name: Download artifact
+      get_url:
+        url: https://github.com/KirillSmirnow/vpn-router/releases/download/v{{version}}/vpn-router-bootstrap-{{version}}.jar
+        dest: "{{working_directory}}/docker"
+    - name: Launch Docker Compose
+      community.docker.docker_compose_v2:
+        project_name: vpn-router
+        project_src: "{{working_directory}}/docker"
+        build: always
+      environment:
+        NETWORK_MODE: host
+        HEAP: "{{heap}}"
+        PROFILES: "{{profiles}}"

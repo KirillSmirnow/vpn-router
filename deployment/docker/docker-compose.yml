@@ -2,5 +2,9 @@ services:
   app:
     build: .
     restart: always
+    environment:
+      HEAP:
+      PROFILES:
+    network_mode: ${NETWORK_MODE:-bridge}
     ports:
       - 127.0.0.1:20100:8080
