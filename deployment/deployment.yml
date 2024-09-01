@@ -17,6 +17,7 @@
         project_src: "{{working_directory}}/docker"
         build: always
       environment:
-        NETWORK_MODE: host
         HEAP: "{{heap}}"
-        PROFILES: "{{profiles}}"
+        SERVER_PORT: "{{public_port}}"
+        SPRING_PROFILES_ACTIVE: "{{profiles}}"
+        NETWORK_MODE: host
