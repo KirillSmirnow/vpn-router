@@ -1,4 +1,4 @@
-package vpnrouter.web;
+package vpnrouter.web.model;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package vpnrouter.web;
+package vpnrouter.web.ui.clients;
 
 import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
@@ -7,8 +7,6 @@ import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
@@ -19,10 +17,13 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
+import vpnrouter.web.model.ClientWebView;
 
 import java.util.List;
 
@@ -33,12 +34,16 @@ import java.util.List;
 
 // I advise to split this class into smaller classes (grid, toggle, name field, etc.)
 
+@RequiredArgsConstructor
 public class ClientsPage extends AppLayout {
-    private final ClientService clientService;
-    private final Grid<ClientWebView> grid;
 
-    public ClientsPage(ClientService clientService) {
-        this.clientService = clientService;
+    private final ClientService clientService;
+    private final ClientDeletion clientDeletion;
+
+    private Grid<ClientWebView> grid;
+
+    @PostConstruct
+    public void initialize() {
         VerticalLayout layout = new VerticalLayout();
         grid = new Grid<>();
         addToNavbar(new H3("Clients"));
@@ -153,30 +158,6 @@ public class ClientsPage extends AppLayout {
     }
 
     private void addDeleteButton() {
-        grid.addComponentColumn(
-                clientView -> {
-                    Button deleteButton = new Button("Delete");
-                    deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-                    deleteButton.addClickListener(event -> getClientDeletionDialog(clientView));
-                    return deleteButton;
-                }
-        );
-    }
-
-    private void getClientDeletionDialog(ClientWebView clientView) {
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Delete client");
-        dialog.setText("Do you really want to delete %s client?".formatted(clientView.getName()));
-        dialog.setCancelable(true);
-        dialog.addCancelListener(event -> dialog.close());
-        dialog.setConfirmText("Delete");
-        dialog.setConfirmButtonTheme("error primary");
-        dialog.addConfirmListener(
-                event -> {
-                    clientService.remove(clientView.getIpAddress());
-                    grid.setItems(map(clientService.getAll()));
-                }
-        );
-        dialog.open();
+        grid.addComponentColumn(client -> clientDeletion.buildDeleteButton(client, this::fillGrid));
     }
 }

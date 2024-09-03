@@ -1,4 +1,4 @@
-package vpnrouter.web;
+package vpnrouter.web.ui;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
