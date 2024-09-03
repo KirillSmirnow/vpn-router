@@ -1,6 +1,5 @@
 package vpnrouter.web.ui.clients;
 
-import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
@@ -14,7 +13,6 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import jakarta.annotation.PostConstruct;
@@ -38,6 +36,8 @@ import java.util.List;
 public class ClientsPage extends AppLayout {
 
     private final ClientService clientService;
+
+    private final ClientTunnelledSwitch clientTunnelledSwitch;
     private final ClientDeletion clientDeletion;
 
     private Grid<ClientWebView> grid;
@@ -138,23 +138,8 @@ public class ClientsPage extends AppLayout {
     }
 
     private void addTunnelledToggleSwitch() {
-        grid.addColumn(new ComponentRenderer<>(this::getTunnelledToggleSwitch)).setHeader("Tunnelled");
-    }
-
-    private ToggleButton getTunnelledToggleSwitch(ClientWebView client) {
-        ToggleButton toggle = new ToggleButton();
-        toggle.setValue(client.isTunnelled());
-        toggle.addValueChangeListener(
-                event -> {
-                    boolean isTunnelled = event.getValue();
-                    ClientUpdate clientUpdate = ClientUpdate.builder()
-                            .name(client.getName())
-                            .tunnelled(isTunnelled)
-                            .build();
-                    clientService.update(client.getIpAddress(), clientUpdate);
-                }
-        );
-        return toggle;
+        grid.addComponentColumn(client -> clientTunnelledSwitch.buildSwitch(client, this::fillGrid))
+                .setHeader("Tunnelled");
     }
 
     private void addDeleteButton() {
