@@ -9,11 +9,11 @@ import vpnrouter.web.model.ClientWebView;
 
 @Component
 @RequiredArgsConstructor
-public class ClientTunnelledSwitch {
+public class ClientTunnelSwitchFactory {
 
     private final ClientService clientService;
 
-    public ToggleButton buildSwitch(ClientWebView client, Runnable onSuccessListener) {
+    public ToggleButton build(ClientWebView client, Runnable onSwitchedListener) {
         var toggle = new ToggleButton();
         toggle.setValue(client.isTunnelled());
         toggle.addValueChangeListener(event -> {
@@ -22,7 +22,7 @@ public class ClientTunnelledSwitch {
                     .tunnelled(event.getValue())
                     .build();
             clientService.update(client.getIpAddress(), clientUpdate);
-            onSuccessListener.run();
+            onSwitchedListener.run();
         });
         return toggle;
     }

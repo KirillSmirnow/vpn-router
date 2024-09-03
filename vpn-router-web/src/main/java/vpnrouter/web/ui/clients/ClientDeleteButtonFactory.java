@@ -12,18 +12,18 @@ import vpnrouter.web.model.ClientWebView;
 
 @Component
 @RequiredArgsConstructor
-public class ClientDeletion {
+public class ClientDeleteButtonFactory {
 
     private final ClientService clientService;
 
-    public Button buildDeleteButton(ClientWebView client, Runnable onSuccessListener) {
+    public Button build(ClientWebView client, Runnable onDeletedListener) {
         var deleteButton = new Button(new Icon(VaadinIcon.TRASH));
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        deleteButton.addClickListener(event -> openConfirmDialog(client, onSuccessListener));
+        deleteButton.addClickListener(event -> openConfirmDialog(client, onDeletedListener));
         return deleteButton;
     }
 
-    private void openConfirmDialog(ClientWebView client, Runnable onSuccessListener) {
+    private void openConfirmDialog(ClientWebView client, Runnable onDeletedListener) {
         var dialog = new ConfirmDialog();
         dialog.setHeader("Delete client");
         dialog.setText("Do you really want to delete %s?".formatted(
@@ -34,7 +34,7 @@ public class ClientDeletion {
         dialog.setConfirmButtonTheme("error primary");
         dialog.addConfirmListener(event -> {
             clientService.remove(client.getIpAddress());
-            onSuccessListener.run();
+            onDeletedListener.run();
         });
         dialog.open();
     }
