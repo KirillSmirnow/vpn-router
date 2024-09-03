@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import jakarta.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import vpnrouter.web.ui.AddClientPage;
 
 @UIScope
 @Route("")
+@PageTitle("Clients")
 @CssImport("./styles/styles.css")
 @RequiredArgsConstructor
 public class ClientsPage extends AppLayout {
@@ -26,7 +28,9 @@ public class ClientsPage extends AppLayout {
         var grid = clientsGridFactory.build((clientsGridRefresher) ->
                 this.clientsGridRefresher = clientsGridRefresher
         );
-        setContent(new VerticalLayout(grid, buildAddClientButton()));
+        var layout = new VerticalLayout(grid, buildAddClientButton());
+        layout.setHeightFull();
+        setContent(layout);
         addToNavbar(new H3("Clients"));
         clientsGridRefresher.run();
     }
