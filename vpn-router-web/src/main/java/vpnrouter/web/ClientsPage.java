@@ -4,6 +4,7 @@ import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -34,7 +35,11 @@ public class ClientsPage extends AppLayout {
     private final ClientStorage clientStorage;
     private final Grid<ClientWebView> grid;
 
+    private ClientWebView cururentselect;
+
     public ClientsPage(ClientService clientService, ClientStorage clientStorage) {
+        System.out.println(this);
+
         this.clientService = clientService;
         this.clientStorage = clientStorage;
         VerticalLayout layout = new VerticalLayout();
@@ -117,20 +122,20 @@ public class ClientsPage extends AppLayout {
         nameField.setWidthFull();
         addCloseHandler(nameField, editor);
         binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
-        nameField.addValueChangeListener(
-                event -> {
-                    ClientWebView cachedClient = clientStorage.getValue();
-                    ClientUpdate clientUpdate = ClientUpdate.builder()
-                            .tunnelled(cachedClient.isTunnelled())
-                            .name(event.getValue())
-                            .build();
-                    clientService.update(cachedClient.getIpAddress(), clientUpdate);
-                }
-        );
+
+        nameField.addKeyDownListener(Key.ENTER, event -> {
+            ClientWebView cachedClient = clientStorage.getValue();
+            ClientUpdate clientUpdate = ClientUpdate.builder()
+                    .tunnelled(cachedClient.isTunnelled())
+                    .name(((TextField)event.getSource()).getValue())
+                    .build();
+            clientService.update(cachedClient.getIpAddress(), clientUpdate);
+        });
+
         nameColumn.setEditorComponent(nameField);
     }
 
-    private static void addCloseHandler(Component textField, Editor<ClientWebView> editor) {
+    private void addCloseHandler(Component textField, Editor<ClientWebView> editor) {
         textField.getElement()
                 .addEventListener("keydown", event -> editor.cancel())
                 .setFilter("event.code === 'Escape'");
