@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.web.model.ClientWebView;
 
-import java.util.function.Consumer;
-
 @Component
 @RequiredArgsConstructor
 public class ClientsGridFactory {
@@ -20,16 +18,14 @@ public class ClientsGridFactory {
     private final ClientTunnelSwitchFactory clientTunnelSwitchFactory;
     private final ClientDeleteButtonFactory clientDeleteButtonFactory;
 
-    public Grid<ClientWebView> build(Consumer<Runnable> refresherProvider) {
+    public Grid<ClientWebView> build() {
         var grid = new Grid<ClientWebView>();
         var editor = createEditor(grid);
-
         addIpAddressField(grid);
         addNameField(grid, editor);
         addTunnelSwitch(grid);
         addDeleteButton(grid);
-
-        refresherProvider.accept(() -> refreshGrid(grid));
+        refreshGrid(grid);
         return grid;
     }
 
