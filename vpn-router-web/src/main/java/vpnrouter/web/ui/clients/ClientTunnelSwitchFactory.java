@@ -4,8 +4,7 @@ import com.vaadin.componentfactory.ToggleButton;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientService;
-import vpnrouter.api.client.ClientUpdate;
-import vpnrouter.web.model.ClientWebView;
+import vpnrouter.web.model.Client;
 
 @Component
 @RequiredArgsConstructor
@@ -13,14 +12,11 @@ public class ClientTunnelSwitchFactory {
 
     private final ClientService clientService;
 
-    public ToggleButton build(ClientWebView client, Runnable onSwitchedListener) {
+    public ToggleButton build(Client client, Runnable onSwitchedListener) {
         var toggle = new ToggleButton();
         toggle.setValue(client.isTunnelled());
         toggle.addValueChangeListener(event -> {
-            var clientUpdate = ClientUpdate.builder()
-                    .name(client.getName())
-                    .tunnelled(event.getValue())
-                    .build();
+            var clientUpdate = client.withTunnelled(event.getValue()).toClientUpdate();
             clientService.update(client.getIpAddress(), clientUpdate);
             onSwitchedListener.run();
         });

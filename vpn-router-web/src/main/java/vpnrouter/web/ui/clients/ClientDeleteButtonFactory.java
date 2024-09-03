@@ -8,7 +8,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientService;
-import vpnrouter.web.model.ClientWebView;
+import vpnrouter.web.model.Client;
 
 @Component
 @RequiredArgsConstructor
@@ -16,14 +16,14 @@ public class ClientDeleteButtonFactory {
 
     private final ClientService clientService;
 
-    public Button build(ClientWebView client, Runnable onDeletedListener) {
+    public Button build(Client client, Runnable onDeletedListener) {
         var deleteButton = new Button(new Icon(VaadinIcon.TRASH));
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         deleteButton.addClickListener(event -> openConfirmDialog(client, onDeletedListener));
         return deleteButton;
     }
 
-    private void openConfirmDialog(ClientWebView client, Runnable onDeletedListener) {
+    private void openConfirmDialog(Client client, Runnable onDeletedListener) {
         var dialog = new ConfirmDialog();
         dialog.setHeader("Delete client");
         dialog.setText("Do you really want to delete %s?".formatted(
