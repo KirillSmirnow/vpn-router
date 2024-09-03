@@ -30,18 +30,15 @@ import java.util.List;
 @UIScope
 @Route("")
 @Slf4j
+
+// I advise to split this class into smaller classes (grid, toggle, name field, etc.)
+
 public class ClientsPage extends AppLayout {
     private final ClientService clientService;
-    private final ClientStorage clientStorage;
     private final Grid<ClientWebView> grid;
 
-    private ClientWebView cururentselect;
-
-    public ClientsPage(ClientService clientService, ClientStorage clientStorage) {
-        System.out.println(this);
-
+    public ClientsPage(ClientService clientService) {
         this.clientService = clientService;
-        this.clientStorage = clientStorage;
         VerticalLayout layout = new VerticalLayout();
         grid = new Grid<>();
         addToNavbar(new H3("Clients"));
@@ -64,12 +61,14 @@ public class ClientsPage extends AppLayout {
         grid.setItems(clients);
     }
 
+    // bad name: it not only fills, it also sets listeners...
     private void fillGrid() {
         Binder<ClientWebView> binder = new Binder<>(ClientWebView.class);
         Editor<ClientWebView> editor = grid.getEditor();
         editor.setBuffered(false);
         editor.setBinder(binder);
 
+        // strange behavior: when you click on an IP address, name text field becomes editable
         grid.addItemDoubleClickListener(
                 event -> {
                     editor.editItem(event.getItem());
@@ -78,15 +77,6 @@ public class ClientsPage extends AppLayout {
                         ((Focusable<?>) editorComponent).focus();
                     }
                 });
-        grid.addSelectionListener(
-                event -> {
-                    if (event.getFirstSelectedItem().isPresent()) {
-                        clientStorage.removeAll();
-                        ClientWebView cachedClient = event.getFirstSelectedItem().get();
-                        clientStorage.setValue(cachedClient);
-                    }
-                }
-        );
 
         addIpAddressColumn();
         addNameColumn(binder, editor);
@@ -99,6 +89,7 @@ public class ClientsPage extends AppLayout {
         }
     }
 
+    // unclear name
     private List<ClientWebView> map(List<ClientView> clients) {
         return clients
                 .stream()
@@ -117,28 +108,28 @@ public class ClientsPage extends AppLayout {
     }
 
     private void addNameColumn(Binder<ClientWebView> binder, Editor<ClientWebView> editor) {
-        Grid.Column<ClientWebView> nameColumn = grid.addColumn(ClientWebView::getName).setHeader("Name");
-        TextField nameField = new TextField();
-        nameField.setWidthFull();
-        addCloseHandler(nameField, editor);
-        binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
+        var nameColumn = grid.addColumn(ClientWebView::getName).setHeader("Name");
+        nameColumn.setEditorComponent(client -> {
+            var nameField = new TextField();
+            nameField.setWidthFull();
+            binder.forField(nameField).bind(ClientWebView::getName, ClientWebView::setName);
 
-        nameField.addKeyDownListener(Key.ENTER, event -> {
-            ClientWebView cachedClient = clientStorage.getValue();
-            ClientUpdate clientUpdate = ClientUpdate.builder()
-                    .tunnelled(cachedClient.isTunnelled())
-                    .name(((TextField)event.getSource()).getValue())
-                    .build();
-            clientService.update(cachedClient.getIpAddress(), clientUpdate);
+            nameField.addKeyDownListener(Key.ENTER, event -> {
+                ClientUpdate clientUpdate = ClientUpdate.builder()
+                        .tunnelled(client.isTunnelled())
+                        .name(((TextField) event.getSource()).getValue())
+                        .build();
+                clientService.update(client.getIpAddress(), clientUpdate);
+                fillGrid();
+                editor.closeEditor();
+            });
+            nameField.addKeyDownListener(Key.ESCAPE, event -> {
+                fillGrid();
+                editor.closeEditor();
+            });
+
+            return nameField;
         });
-
-        nameColumn.setEditorComponent(nameField);
-    }
-
-    private void addCloseHandler(Component textField, Editor<ClientWebView> editor) {
-        textField.getElement()
-                .addEventListener("keydown", event -> editor.cancel())
-                .setFilter("event.code === 'Escape'");
     }
 
     private void addTunnelledToggleSwitch() {
