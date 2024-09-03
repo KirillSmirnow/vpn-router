@@ -22,37 +22,38 @@ public class ClientsGridFactory {
 
     public Grid<ClientWebView> build(Consumer<Runnable> refresherProvider) {
         var grid = new Grid<ClientWebView>();
-        var editor = grid.getEditor();
-        editor.setBuffered(false);
-        var binder = new Binder<>(ClientWebView.class);
-        editor.setBinder(binder);
-
-        // strange behavior: when you click on an IP address, name text field becomes editable
-        grid.addItemDoubleClickListener(event -> {
-            editor.editItem(event.getItem());
-            com.vaadin.flow.component.Component editorComponent = event.getColumn().getEditorComponent();
-            if (editorComponent instanceof Focusable) {
-                ((Focusable<?>) editorComponent).focus();
-            }
-        });
+        var editor = createEditor(grid);
 
         addIpAddressField(grid);
-        addNameField(grid, binder, editor);
+        addNameField(grid, editor);
         addTunnelSwitch(grid);
         addDeleteButton(grid);
 
         refresherProvider.accept(() -> refreshGrid(grid));
-
         return grid;
+    }
+
+    private Editor<ClientWebView> createEditor(Grid<ClientWebView> grid) {
+        var editor = grid.getEditor();
+        editor.setBuffered(false);
+        editor.setBinder(new Binder<>(ClientWebView.class));
+        grid.addItemDoubleClickListener(event -> {
+            editor.editItem(event.getItem());
+            var editorComponent = event.getColumn().getEditorComponent();
+            if (editorComponent instanceof Focusable<?> focusableEditorComponent) {
+                focusableEditorComponent.focus();
+            }
+        });
+        return editor;
     }
 
     private void addIpAddressField(Grid<ClientWebView> grid) {
         grid.addColumn(ClientWebView::getIpAddress).setHeader("IP address");
     }
 
-    private void addNameField(Grid<ClientWebView> grid, Binder<ClientWebView> binder, Editor<ClientWebView> editor) {
+    private void addNameField(Grid<ClientWebView> grid, Editor<ClientWebView> editor) {
         var nameColumn = grid.addColumn(ClientWebView::getName).setHeader("Name");
-        nameColumn.setEditorComponent(client -> clientNameFieldFactory.build(client, binder, () -> {
+        nameColumn.setEditorComponent(client -> clientNameFieldFactory.build(client, editor.getBinder(), () -> {
             editor.closeEditor();
             refreshGrid(grid);
         }));
