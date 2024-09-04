@@ -18,6 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsLast;
 
 @Component
 @RequiredArgsConstructor
@@ -79,7 +80,10 @@ public class ClientsStorage implements ClientRepository {
         if (Files.notExists(path)) {
             Files.createDirectories(path.getParent());
         }
-        clients.getClients().sort(comparing(Client::getLastSwitchedAt).reversed());
+        clients.getClients().sort(
+                comparing(Client::getName, nullsLast(String.CASE_INSENSITIVE_ORDER))
+                        .thenComparing(Client::getIpAddress)
+        );
         objectMapper.writeValue(path.toFile(), clients);
     }
 
