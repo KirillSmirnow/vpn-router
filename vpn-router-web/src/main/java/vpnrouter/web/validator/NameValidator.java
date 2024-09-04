@@ -1,4 +1,4 @@
-package vpnrouter.web;
+package vpnrouter.web.validator;
 
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
