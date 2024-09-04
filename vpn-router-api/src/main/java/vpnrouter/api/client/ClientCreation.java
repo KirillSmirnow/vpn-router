@@ -12,10 +12,10 @@ public class ClientCreation {
 
     @NotBlank
     @IpAddress
-    private String ipAddress;
+    private final String ipAddress;
 
     @Size(min = ClientConstraints.Name.MIN, max = ClientConstraints.Name.MAX)
-    private String name;
+    private final String name;
 
-    private boolean tunnelled;
+    private final boolean tunnelled;
 }

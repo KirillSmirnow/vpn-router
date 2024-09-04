@@ -1,9 +1,7 @@
 package vpnrouter.web.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.With;
+import lombok.*;
+import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
 
@@ -19,6 +17,18 @@ public class Client {
     private final String name;
     @With
     private final boolean tunnelled;
+
+    @Getter
+    @Setter
+    public static class ClientWrapper {
+        private String ipAddress;
+        private String name;
+        private boolean tunnelled;
+
+        public Client build() {
+            return new Client(ipAddress, name, tunnelled);
+        }
+    }
 
     public static Client from(ClientView client) {
         return Client.builder()
@@ -36,6 +46,14 @@ public class Client {
 
     public ClientUpdate toClientUpdate() {
         return ClientUpdate.builder()
+                .name(name)
+                .tunnelled(tunnelled)
+                .build();
+    }
+
+    public ClientCreation toClientCreation() {
+        return ClientCreation.builder()
+                .ipAddress(ipAddress)
                 .name(name)
                 .tunnelled(tunnelled)
                 .build();

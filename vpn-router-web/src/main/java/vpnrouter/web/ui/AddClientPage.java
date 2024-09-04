@@ -11,8 +11,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.stereotype.Component;
-import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientService;
+import vpnrouter.web.model.Client;
 import vpnrouter.web.validator.IpAddressValidator;
 import vpnrouter.web.validator.NameValidator;
 
@@ -32,29 +32,26 @@ public class AddClientPage extends VerticalLayout {
 
     public AddClientPage(ClientService clientService) {
         this.clientService = clientService;
-        Binder<ClientCreation> binder = new Binder<>(ClientCreation.class);
+        Binder<Client.ClientWrapper> binder = new Binder<>(Client.ClientWrapper.class);
         ipAddressField = new TextField("IP address", "192.168.0.123");
         ipAddressField.setRequired(true);
         binder.forField(ipAddressField)
                 .withValidator(new IpAddressValidator())
-                .bind(ClientCreation::getIpAddress, ClientCreation::setIpAddress);
+                .bind(Client.ClientWrapper::getIpAddress, Client.ClientWrapper::setIpAddress);
         nameField = new TextField("Name", "My Laptop");
         binder.forField(nameField)
                 .withValidator(new NameValidator())
-                .bind(ClientCreation::getName, ClientCreation::setName);
+                .bind(Client.ClientWrapper::getName, Client.ClientWrapper::setName);
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
         addButton = new Button("Add");
         addButton.addClickListener(
                 event -> {
-                    var clientCreation = ClientCreation.builder()
-                            .ipAddress(ipAddressField.getOptionalValue().orElse(null))
-                            .name(nameField.getOptionalValue().orElse(null))
-                            .tunnelled(tunnelledCheckbox.getValue())
-                            .build();
+                    Client.ClientWrapper clientBuilder = new Client.ClientWrapper();
                     try {
                         if (binder.validate().isOk()) {
-                            binder.writeBean(clientCreation);
-                            clientService.add(clientCreation);
+                            binder.writeBean(clientBuilder);
+                            Client client = clientBuilder.build();
+                            clientService.add(client.toClientCreation());
                             getUI().ifPresent(ui -> ui.navigate(""));
                             Notification.show("Client added");
                         }
@@ -65,14 +62,5 @@ public class AddClientPage extends VerticalLayout {
         );
         cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
-    }
-
-    private void addClient() {
-        var clientCreation = ClientCreation.builder()
-                .ipAddress(ipAddressField.getOptionalValue().orElse(null))
-                .name(nameField.getOptionalValue().orElse(null))
-                .tunnelled(tunnelledCheckbox.getValue())
-                .build();
-        clientService.add(clientCreation);
     }
 }
