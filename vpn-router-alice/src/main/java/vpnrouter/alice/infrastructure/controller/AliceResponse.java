@@ -1,4 +1,4 @@
-package vpnrouter.alice;
+package vpnrouter.alice.infrastructure.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
