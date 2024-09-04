@@ -1,4 +1,4 @@
-package vpnrouter.web;
+package vpnrouter.web.ui;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -16,7 +16,7 @@ import vpnrouter.api.client.ClientService;
 @Component
 @PageTitle("Add Client")
 @Route("/clients/add")
-public class AddClientView extends VerticalLayout {
+public class AddClientPage extends VerticalLayout {
 
     private final ClientService clientService;
 
@@ -26,7 +26,7 @@ public class AddClientView extends VerticalLayout {
     private final Button addButton;
     private final Button cancelButton;
 
-    public AddClientView(ClientService clientService) {
+    public AddClientPage(ClientService clientService) {
         this.clientService = clientService;
         ipAddressField = new TextField("IP address", "192.168.0.123");
         ipAddressField.setRequired(true);
@@ -34,10 +34,10 @@ public class AddClientView extends VerticalLayout {
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
         addButton = new Button("Add", $ -> {
             addClient();
-            getUI().ifPresent(ui -> ui.navigate("/clients"));
+            getUI().ifPresent(ui -> ui.navigate(""));
             Notification.show("Client added");
         });
-        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("/clients")));
+        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
     }
 
