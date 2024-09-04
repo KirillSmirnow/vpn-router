@@ -28,16 +28,22 @@ public class AliceServiceImpl implements AliceService {
 
     private ClientView findOneClient(String query) {
         var clients = clientService.getAll().stream()
-                .filter(client -> client.getName().equalsIgnoreCase(query))
+                .filter(client -> matches(client, query))
                 .toList();
         log.info("For query = '{}', found clients: {}", query, clients);
         if (clients.isEmpty()) {
-            throw new IllegalArgumentException("Такой клиент не найден");
+            throw new IllegalArgumentException("Клиент не найден");
         }
         if (clients.size() > 1) {
             throw new IllegalArgumentException("Подходит больше одного клиента");
         }
         return clients.getFirst();
+    }
+
+    private boolean matches(ClientView client, String query) {
+        var nameMatches = client.getName() != null && client.getName().equalsIgnoreCase(query);
+        var ipAddressMatches = client.getIpAddress().endsWith("." + query);
+        return nameMatches || ipAddressMatches;
     }
 
     private void switchTunneling(ClientView client, boolean tunnelled) {

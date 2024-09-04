@@ -9,7 +9,7 @@ import vpnrouter.alice.service.AliceService;
 
 @Slf4j
 @RestController
-@RequestMapping("/alice")
+@RequestMapping("/alice/**")
 @RequiredArgsConstructor
 public class AliceController {
 
