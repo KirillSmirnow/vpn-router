@@ -56,7 +56,7 @@ public class AddClientPage extends VerticalLayout {
                             Notification.show("Client added");
                         }
                     } catch (ValidationException e) {
-                        System.out.println(e.getMessage());
+                        Notification.show("Validation failed: " + e.getMessage());
                     }
                 }
         );
