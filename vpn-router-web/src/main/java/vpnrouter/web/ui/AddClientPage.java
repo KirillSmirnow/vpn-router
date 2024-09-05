@@ -32,35 +32,39 @@ public class AddClientPage extends VerticalLayout {
 
     public AddClientPage(ClientService clientService) {
         this.clientService = clientService;
-        Binder<Client.ClientWrapper> binder = new Binder<>(Client.ClientWrapper.class);
         ipAddressField = new TextField("IP address", "192.168.0.123");
         ipAddressField.setRequired(true);
+        nameField = new TextField("Name", "My Laptop");
+        tunnelledCheckbox = new Checkbox("Tunnelled", true);
+        addButton = new Button("Add", event -> validateAndAdd());
+        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
+        add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
+    }
+
+    private void validateAndAdd() {
+        Binder<Client.ClientWrapper> binder = buildBinder();
+        Client.ClientWrapper clientWrapper = new Client.ClientWrapper();
+        try {
+            if (binder.validate().isOk()) {
+                binder.writeBean(clientWrapper);
+                Client client = clientWrapper.build();
+                clientService.add(client.toClientCreation());
+                getUI().ifPresent(ui -> ui.navigate(""));
+                Notification.show("Client added");
+            }
+        } catch (ValidationException e) {
+            Notification.show("Validation failed: " + e.getMessage());
+        }
+    }
+
+    private Binder<Client.ClientWrapper> buildBinder() {
+        Binder<Client.ClientWrapper> binder = new Binder<>(Client.ClientWrapper.class);
         binder.forField(ipAddressField)
                 .withValidator(new IpAddressValidator())
                 .bind(Client.ClientWrapper::getIpAddress, Client.ClientWrapper::setIpAddress);
-        nameField = new TextField("Name", "My Laptop");
         binder.forField(nameField)
                 .withValidator(new NameValidator())
                 .bind(Client.ClientWrapper::getName, Client.ClientWrapper::setName);
-        tunnelledCheckbox = new Checkbox("Tunnelled", true);
-        addButton = new Button("Add");
-        addButton.addClickListener(
-                event -> {
-                    Client.ClientWrapper clientBuilder = new Client.ClientWrapper();
-                    try {
-                        if (binder.validate().isOk()) {
-                            binder.writeBean(clientBuilder);
-                            Client client = clientBuilder.build();
-                            clientService.add(client.toClientCreation());
-                            getUI().ifPresent(ui -> ui.navigate(""));
-                            Notification.show("Client added");
-                        }
-                    } catch (ValidationException e) {
-                        Notification.show("Validation failed: " + e.getMessage());
-                    }
-                }
-        );
-        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
-        add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
+        return binder;
     }
 }
