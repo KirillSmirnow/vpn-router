@@ -1,8 +1,6 @@
 package vpnrouter.web.ui.clients;
 
-import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.data.binder.Binder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,39 +18,30 @@ public class ClientsGridFactory {
 
     public Grid<Client> build() {
         var grid = new Grid<Client>();
-        var editor = createEditor(grid);
+        createEditor(grid);
         addIpAddressField(grid);
-        addNameField(grid, editor);
+        addNameField(grid);
         addTunnelSwitch(grid);
         addDeleteButton(grid);
         refreshGrid(grid);
         return grid;
     }
 
-    private Editor<Client> createEditor(Grid<Client> grid) {
+    private void createEditor(Grid<Client> grid) {
         var editor = grid.getEditor();
-        editor.setBuffered(false);
-        editor.setBinder(new Binder<>(Client.class));
-        grid.addItemDoubleClickListener(event -> {
-            editor.editItem(event.getItem());
-            var editorComponent = event.getColumn().getEditorComponent();
-            if (editorComponent instanceof Focusable<?> focusableEditorComponent) {
-                focusableEditorComponent.focus();
-            }
-        });
-        return editor;
+        editor.setBinder(new Binder<>());
+        grid.addItemDoubleClickListener(event -> editor.editItem(event.getItem()));
     }
 
     private void addIpAddressField(Grid<Client> grid) {
         grid.addColumn(Client::getIpAddress).setHeader("IP address");
     }
 
-    private void addNameField(Grid<Client> grid, Editor<Client> editor) {
+    private void addNameField(Grid<Client> grid) {
         var nameColumn = grid.addColumn(Client::getName).setHeader("Name");
-        nameColumn.setEditorComponent(client -> clientNameFieldFactory.build(client, () -> {
-            editor.closeEditor();
-            refreshGrid(grid);
-        }));
+        nameColumn.setEditorComponent(client ->
+                clientNameFieldFactory.build(client, () -> refreshGrid(grid))
+        );
     }
 
     private void addTunnelSwitch(Grid<Client> grid) {
