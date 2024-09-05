@@ -36,25 +36,10 @@ public class AddClientPage extends VerticalLayout {
         ipAddressField.setRequired(true);
         nameField = new TextField("Name", "My Laptop");
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
-        addButton = new Button("Add", event -> validateAndAdd());
+        Binder<Client.ClientWrapper> binder = buildBinder();
+        addButton = new Button("Add", event -> validateAndAdd(binder));
         cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
-    }
-
-    private void validateAndAdd() {
-        Binder<Client.ClientWrapper> binder = buildBinder();
-        Client.ClientWrapper clientWrapper = new Client.ClientWrapper();
-        try {
-            if (binder.validate().isOk()) {
-                binder.writeBean(clientWrapper);
-                Client client = clientWrapper.build();
-                clientService.add(client.toClientCreation());
-                getUI().ifPresent(ui -> ui.navigate(""));
-                Notification.show("Client added");
-            }
-        } catch (ValidationException e) {
-            Notification.show("Validation failed: " + e.getMessage());
-        }
     }
 
     private Binder<Client.ClientWrapper> buildBinder() {
@@ -66,5 +51,20 @@ public class AddClientPage extends VerticalLayout {
                 .withValidator(new NameValidator())
                 .bind(Client.ClientWrapper::getName, Client.ClientWrapper::setName);
         return binder;
+    }
+
+    private void validateAndAdd(Binder<Client.ClientWrapper> binder) {
+        Client.ClientWrapper clientBuilder = new Client.ClientWrapper();
+        try {
+            if (binder.validate().isOk()) {
+                binder.writeBean(clientBuilder);
+                Client client = clientBuilder.build();
+                clientService.add(client.toClientCreation());
+                getUI().ifPresent(ui -> ui.navigate(""));
+                Notification.show("Client added");
+            }
+        } catch (ValidationException e) {
+            Notification.show("Validation failed: " + e.getMessage());
+        }
     }
 }
