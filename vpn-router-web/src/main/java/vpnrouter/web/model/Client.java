@@ -49,10 +49,6 @@ public class Client {
     }
 
     public ClientCreation toClientCreation() {
-        return ClientCreation.builder()
-                .ipAddress(ipAddress)
-                .name(name)
-                .tunnelled(tunnelled)
-                .build();
+        return OBJECT_MAPPER.convertValue(this, ClientCreation.class);
     }
 }
