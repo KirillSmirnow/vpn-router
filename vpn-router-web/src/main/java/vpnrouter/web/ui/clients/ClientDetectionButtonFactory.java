@@ -19,8 +19,13 @@ public class ClientDetectionButtonFactory {
                     clientDetectionService.detectAndSave(
                             new ClientDetectionService.CompletionListener() {
                                 @Override
+                                public void onStart() {
+                                    ui.access(() -> Notification.show("Client detection has started"));
+                                }
+
+                                @Override
                                 public void onAlreadyRunning() {
-                                    ui.access(() -> Notification.show("Detection is already running"));
+                                    ui.access(() -> Notification.show("Detection has already started"));
                                 }
 
                                 @Override

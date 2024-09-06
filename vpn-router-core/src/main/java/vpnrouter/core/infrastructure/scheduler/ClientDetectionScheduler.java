@@ -15,6 +15,10 @@ public class ClientDetectionScheduler {
     public void detectAndSave() {
         clientDetectionService.detectAndSave(new ClientDetectionService.CompletionListener() {
             @Override
+            public void onStart() {
+            }
+
+            @Override
             public void onAlreadyRunning() {
             }
 

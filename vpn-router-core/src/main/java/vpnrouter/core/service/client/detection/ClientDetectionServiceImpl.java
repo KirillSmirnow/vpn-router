@@ -47,6 +47,7 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
 
     private void executeTask(CompletionListener completionListener) {
         log.info("Detecting and saving clients");
+        completionListener.onStart();
         var detectedIpAddresses = clientDetector.detectIpAddresses();
         var existingIpAddresses = clientRepository.findAll().stream()
                 .map(Client::getIpAddress)

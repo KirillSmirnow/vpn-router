@@ -5,6 +5,7 @@ public interface ClientDetectionService {
     void detectAndSave(CompletionListener completionListener);
 
     interface CompletionListener {
+        void onStart();
 
         void onAlreadyRunning();
 
