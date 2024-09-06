@@ -5,6 +5,9 @@ import com.vaadin.flow.component.notification.Notification;
 import lombok.RequiredArgsConstructor;
 import vpnrouter.api.client.ClientDetectionService;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 @RequiredArgsConstructor
 public class CompetitionListenerImpl implements ClientDetectionService.CompletionListener {
     private final UI ui;
@@ -26,8 +29,16 @@ public class CompetitionListenerImpl implements ClientDetectionService.Completio
 
     @Override
     public void onNewClientsFound(int newClientsCount) {
-        ui.access(() ->
-                Notification.show("Detection completed: %s new clients found".formatted(newClientsCount)));
+        ui.access(() -> {
+                    Notification.show("Detection completed: %s new clients found".formatted(newClientsCount), 10000, Notification.Position.BOTTOM_START);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            ui.access(() -> ui.getPage().reload());
+                        }
+                    }, 2000);
+                }
+        );
     }
 
     @Override
