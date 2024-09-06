@@ -20,12 +20,13 @@ import vpnrouter.web.ui.AddClientPage;
 public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
+    private final ClientDetectionButtonFactory clientDetectionButtonFactory;
 
     @Override
     public void onAttach(AttachEvent event) {
         addToNavbar(new H3("Clients"));
         var grid = clientsGridFactory.build();
-        var layout = new VerticalLayout(grid, buildAddClientButton());
+        var layout = new VerticalLayout(grid, buildAddClientButton(), buildDetectClientButton());
         layout.setHeightFull();
         setContent(layout);
     }
@@ -35,5 +36,9 @@ public class ClientsPage extends AppLayout {
                 "Add client",
                 event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class))
         );
+    }
+
+    private Button buildDetectClientButton() {
+        return clientDetectionButtonFactory.build();
     }
 }
