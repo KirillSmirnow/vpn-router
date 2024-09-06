@@ -2,7 +2,6 @@ package vpnrouter.web.ui.clients;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.notification.Notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientDetectionService;
@@ -16,35 +15,7 @@ public class ClientDetectionButtonFactory {
         var detectionButton = new Button("Detect clients");
         detectionButton.addClickListener(event -> {
                     UI ui = event.getSource().getUI().orElseThrow();
-                    clientDetectionService.detectAndSave(
-                            new ClientDetectionService.CompletionListener() {
-                                @Override
-                                public void onStart() {
-                                    ui.access(() -> Notification.show("Client detection has started"));
-                                }
-
-                                @Override
-                                public void onAlreadyRunning() {
-                                    ui.access(() -> Notification.show("Detection has already started"));
-                                }
-
-                                @Override
-                                public void onNewClientsNotFound() {
-                                    ui.access(() -> Notification.show("Detection completed: new clients not found"));
-                                }
-
-                                @Override
-                                public void onNewClientsFound(int newClientsCount) {
-                                    ui.access(() ->
-                                            Notification.show("Detection completed: %s new clients found".formatted(newClientsCount)));
-                                }
-
-                                @Override
-                                public void onFailure(Exception exception) {
-                                    ui.access(() -> Notification.show("Detection failure: " + exception.getMessage()));
-                                }
-                            }
-                    );
+                    clientDetectionService.detectAndSave(new CompetitionListenerImpl(ui));
                 }
         );
         return detectionButton;

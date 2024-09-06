@@ -2,29 +2,26 @@ package vpnrouter.web.ui.clients;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
+import lombok.RequiredArgsConstructor;
 import vpnrouter.api.client.ClientDetectionService;
 
-
+@RequiredArgsConstructor
 public class CompetitionListenerImpl implements ClientDetectionService.CompletionListener {
     private final UI ui;
 
-    public CompetitionListenerImpl(UI ui) {
-        this.ui = ui;
-    }
-
     @Override
     public void onStart() {
-        ui.access(() -> Notification.show("Client detection has started"));
+        ui.access(() -> Notification.show("New detection has started"));
     }
 
     @Override
     public void onAlreadyRunning() {
-        ui.access(() -> Notification.show("Detection is already running"));
+        ui.access(() -> Notification.show("Detection is already in progress"));
     }
 
     @Override
     public void onNewClientsNotFound() {
-        ui.access(() -> Notification.show("Detection completed: new clients not found"));
+        ui.access(() -> Notification.show("Detection completed: no new clients found"));
     }
 
     @Override
@@ -35,6 +32,6 @@ public class CompetitionListenerImpl implements ClientDetectionService.Completio
 
     @Override
     public void onFailure(Exception exception) {
-        ui.access(() -> Notification.show("Detection failure: " + exception.getMessage()));
+        ui.access(() -> Notification.show("Detection error: " + exception.getMessage()));
     }
 }
