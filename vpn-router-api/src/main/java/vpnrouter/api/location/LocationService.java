@@ -1,6 +1,8 @@
 package vpnrouter.api.location;
 
+import java.util.Optional;
+
 public interface LocationService {
 
-    LocationInfo getLocationInfo();
+    Optional<String> getLocation(String ipAddress);
 }
