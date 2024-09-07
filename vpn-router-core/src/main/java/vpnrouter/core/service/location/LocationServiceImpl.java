@@ -17,7 +17,8 @@ public class LocationServiceImpl implements LocationService {
 
     @SneakyThrows
     private DatabaseReader buildLocationDatabaseReader() {
-        return new DatabaseReader.Builder(getClass().getResourceAsStream("/GeoLite2-City.mmdb")).build();
+        var databaseStream = getClass().getResourceAsStream("/GeoLite2-City.mmdb");
+        return new DatabaseReader.Builder(databaseStream).build();
     }
 
     @Override
