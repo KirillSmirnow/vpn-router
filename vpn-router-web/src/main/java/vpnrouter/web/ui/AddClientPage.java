@@ -61,7 +61,7 @@ public class AddClientPage extends VerticalLayout {
                 binder.writeBean(clientWrapper);
                 var client = clientWrapper.build();
                 clientService.add(client.toClientCreation());
-                getUI().ifPresent(ui -> ui.navigate(""));
+                getUI().ifPresent(ui -> ui.navigate(ClientsPage.class));
                 Notification.show("Client added");
             }
         } catch (ValidationException e) {
