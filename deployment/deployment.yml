@@ -3,6 +3,10 @@
     - name: Include variables
       include_vars:
         file: variables.yml
+    - name: Clean working directory
+      file:
+        path: "{{working_directory}}"
+        state: absent
     - name: Copy sources
       copy:
         src: docker
