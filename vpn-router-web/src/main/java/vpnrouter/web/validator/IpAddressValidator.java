@@ -17,7 +17,7 @@ public class IpAddressValidator implements Validator<String> {
     public ValidationResult apply(String value, ValueContext context) {
         boolean isValid = ipAddressValidator.isValid(value, null);
         if (isValid) {
-            return ValidationResult.ok();  // No validation errors
+            return ValidationResult.ok();
         } else {
             return ValidationResult.error("Invalid ip address");
         }

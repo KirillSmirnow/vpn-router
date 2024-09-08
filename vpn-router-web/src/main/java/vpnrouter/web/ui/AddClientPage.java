@@ -13,6 +13,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.web.model.Client;
+import vpnrouter.web.ui.clients.ClientsPage;
 import vpnrouter.web.validator.IpAddressValidator;
 import vpnrouter.web.validator.NameValidator;
 
@@ -36,29 +37,29 @@ public class AddClientPage extends VerticalLayout {
         ipAddressField.setRequired(true);
         nameField = new TextField("Name", "My Laptop");
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
-        Binder<Client.ClientWrapper> binder = buildBinder();
+        var binder = buildBinder();
         addButton = new Button("Add", event -> validateAndAdd(binder));
-        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
+        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate(ClientsPage.class)));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
     }
 
-    private Binder<Client.ClientWrapper> buildBinder() {
-        Binder<Client.ClientWrapper> binder = new Binder<>(Client.ClientWrapper.class);
+    private Binder<Client.Wrapper> buildBinder() {
+        var binder = new Binder<>(Client.Wrapper.class);
         binder.forField(ipAddressField)
                 .withValidator(new IpAddressValidator())
-                .bind(Client.ClientWrapper::getIpAddress, Client.ClientWrapper::setIpAddress);
+                .bind(Client.Wrapper::getIpAddress, Client.Wrapper::setIpAddress);
         binder.forField(nameField)
                 .withValidator(new NameValidator())
-                .bind(Client.ClientWrapper::getName, Client.ClientWrapper::setName);
+                .bind(Client.Wrapper::getName, Client.Wrapper::setName);
         return binder;
     }
 
-    private void validateAndAdd(Binder<Client.ClientWrapper> binder) {
-        Client.ClientWrapper clientBuilder = new Client.ClientWrapper();
+    private void validateAndAdd(Binder<Client.Wrapper> binder) {
+        var clientWrapper = new Client.Wrapper();
         try {
             if (binder.validate().isOk()) {
-                binder.writeBean(clientBuilder);
-                Client client = clientBuilder.build();
+                binder.writeBean(clientWrapper);
+                var client = clientWrapper.build();
                 clientService.add(client.toClientCreation());
                 getUI().ifPresent(ui -> ui.navigate(""));
                 Notification.show("Client added");

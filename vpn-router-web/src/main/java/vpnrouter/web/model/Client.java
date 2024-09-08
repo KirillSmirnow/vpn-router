@@ -22,9 +22,21 @@ public class Client {
     @With
     private final boolean tunnelled;
 
+    public static Client from(ClientView client) {
+        return OBJECT_MAPPER.convertValue(client, Client.class);
+    }
+
+    public ClientUpdate toClientUpdate() {
+        return OBJECT_MAPPER.convertValue(this, ClientUpdate.class);
+    }
+
+    public ClientCreation toClientCreation() {
+        return OBJECT_MAPPER.convertValue(this, ClientCreation.class);
+    }
+
     @Getter
     @Setter
-    public static class ClientWrapper {
+    public static class Wrapper {
         private String ipAddress;
         private String name;
         private boolean tunnelled;
@@ -38,17 +50,5 @@ public class Client {
         return clients.stream()
                 .map(Client::from)
                 .toList();
-    }
-
-    public static Client from(ClientView client) {
-        return OBJECT_MAPPER.convertValue(client, Client.class);
-    }
-
-    public ClientUpdate toClientUpdate() {
-        return OBJECT_MAPPER.convertValue(this, ClientUpdate.class);
-    }
-
-    public ClientCreation toClientCreation() {
-        return OBJECT_MAPPER.convertValue(this, ClientCreation.class);
     }
 }
