@@ -3,3 +3,8 @@ version: 0.1.0
 profiles: prod
 public_port: 80
 heap: 2G
+alice:
+  secret:
+  skill:
+  user:
+  applications:
