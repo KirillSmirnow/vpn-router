@@ -23,6 +23,6 @@
         ALICE_SECRET: "{{alice.secret}}"
         ALICE_SKILL: "{{alice.skill}}"
         ALICE_USER: "{{alice.user}}"
-        ALICE_APPLICATIONS: "{{alice.applications}}"
+        ALICE_APPLICATIONS: "{{alice.applications | join(',')}}"
         PRIVILEGED: true
         NETWORK_MODE: host
