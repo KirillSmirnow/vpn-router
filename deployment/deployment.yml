@@ -3,6 +3,10 @@
     - name: Include variables
       include_vars:
         file: variables.yml
+    - name: Clean working directory
+      file:
+        path: "{{working_directory}}"
+        state: absent
     - name: Copy sources
       copy:
         src: docker
@@ -20,5 +24,9 @@
         HEAP: "{{heap}}"
         SERVER_PORT: "{{public_port}}"
         SPRING_PROFILES_ACTIVE: "{{profiles}}"
+        ALICE_SECRET: "{{alice.secret}}"
+        ALICE_SKILL: "{{alice.skill}}"
+        ALICE_USER: "{{alice.user}}"
+        ALICE_APPLICATIONS: "{{alice.applications | join(',')}}"
         PRIVILEGED: true
         NETWORK_MODE: host
