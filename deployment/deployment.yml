@@ -20,5 +20,9 @@
         HEAP: "{{heap}}"
         SERVER_PORT: "{{public_port}}"
         SPRING_PROFILES_ACTIVE: "{{profiles}}"
+        ALICE_SECRET: "{{alice.secret}}"
+        ALICE_SKILL: "{{alice.skill}}"
+        ALICE_USER: "{{alice.user}}"
+        ALICE_APPLICATIONS: "{{alice.applications | join(',')}}"
         PRIVILEGED: true
         NETWORK_MODE: host
