@@ -5,6 +5,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -34,10 +35,9 @@ public class ClientsPage extends AppLayout {
     }
 
     private Button buildAddClientButton() {
-        return new Button(
-                "Add client",
-                event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class))
-        );
+        var button = new Button(VaadinIcon.PLUS.create());
+        button.addClickListener(event ->  getUI().ifPresent(ui -> ui.navigate(AddClientPage.class)));
+        return button;
     }
 
     private Button buildDetectClientButton() {
