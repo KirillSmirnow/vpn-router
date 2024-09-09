@@ -5,6 +5,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -26,7 +27,8 @@ public class ClientsPage extends AppLayout {
     public void onAttach(AttachEvent event) {
         addToNavbar(new H3("Clients"));
         var grid = clientsGridFactory.build();
-        var layout = new VerticalLayout(grid, buildAddClientButton(), buildDetectClientButton());
+        var buttons = new HorizontalLayout(buildAddClientButton(), buildDetectClientButton());
+        var layout = new VerticalLayout(buttons, grid);
         layout.setHeightFull();
         setContent(layout);
     }
