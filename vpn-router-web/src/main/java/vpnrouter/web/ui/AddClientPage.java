@@ -11,6 +11,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientService;
+import vpnrouter.web.ui.clients.ClientsPage;
 
 @UIScope
 @Component
@@ -34,10 +35,10 @@ public class AddClientPage extends VerticalLayout {
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
         addButton = new Button("Add", $ -> {
             addClient();
-            getUI().ifPresent(ui -> ui.navigate(""));
+            getUI().ifPresent(ui -> ui.navigate(ClientsPage.class));
             Notification.show("Client added");
         });
-        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate("")));
+        cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate(ClientsPage.class)));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
     }
 

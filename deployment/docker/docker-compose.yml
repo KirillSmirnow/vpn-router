@@ -6,6 +6,10 @@ services:
       HEAP:
       SERVER_PORT:
       SPRING_PROFILES_ACTIVE:
+      ALICE_SECRET:
+      ALICE_SKILL:
+      ALICE_USER:
+      ALICE_APPLICATIONS:
     privileged: ${PRIVILEGED:-false}
     network_mode: ${NETWORK_MODE:-bridge}
     ports:
