@@ -34,6 +34,12 @@ public class Client {
         return OBJECT_MAPPER.convertValue(this, ClientCreation.class);
     }
 
+    public static List<Client> from(List<ClientView> clients) {
+        return clients.stream()
+                .map(Client::from)
+                .toList();
+    }
+
     @Getter
     @Setter
     public static class Wrapper {
@@ -44,11 +50,5 @@ public class Client {
         public Client build() {
             return new Client(ipAddress, name, tunnelled);
         }
-    }
-
-    public static List<Client> from(List<ClientView> clients) {
-        return clients.stream()
-                .map(Client::from)
-                .toList();
     }
 }

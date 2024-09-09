@@ -19,7 +19,7 @@ public class IpAddressValidator implements Validator<String> {
         if (isValid) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error("Invalid ip address");
+            return ValidationResult.error("Invalid IP address");
         }
     }
 }
