@@ -36,12 +36,15 @@ public class CompetitionListenerImpl implements ClientDetectionService.Completio
                             DELAY_MILLISECONDS,
                             Notification.Position.BOTTOM_START
                     );
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            ui.access(() -> ui.getPage().reload());
-                        }
-                    }, DELAY_MILLISECONDS);
+                    new Timer().schedule(
+                            new TimerTask() {
+                                @Override
+                                public void run() {
+                                    ui.access(() -> ui.getPage().reload());
+                                }
+                            },
+                            DELAY_MILLISECONDS
+                    );
                 }
         );
     }
