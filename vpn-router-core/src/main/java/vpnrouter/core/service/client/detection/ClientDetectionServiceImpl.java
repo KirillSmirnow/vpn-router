@@ -26,10 +26,11 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
     private final ClientDetector clientDetector;
 
     @Override
-    public void detectAndSave(CompletionListener completionListener) {
+    public void detectAndSave(StartListener startListener, CompletionListener completionListener) {
         if (detectionInProgress.compareAndSet(false, true)) {
             executor.submit(() -> {
                 try {
+                    startListener.onStart();
                     executeTask(completionListener);
                 } catch (Exception e) {
                     log.warn("Detection failure: {}", e.getMessage(), e);
@@ -47,7 +48,6 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
 
     private void executeTask(CompletionListener completionListener) {
         log.info("Detecting and saving clients");
-        completionListener.onStart();
         var detectedIpAddresses = clientDetector.detectIpAddresses();
         var existingIpAddresses = clientRepository.findAll().stream()
                 .map(Client::getIpAddress)

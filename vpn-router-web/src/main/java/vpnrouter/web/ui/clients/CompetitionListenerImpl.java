@@ -14,11 +14,6 @@ public class CompetitionListenerImpl implements ClientDetectionService.Completio
     private final UI ui;
 
     @Override
-    public void onStart() {
-        ui.access(() -> Notification.show("New detection has started"));
-    }
-
-    @Override
     public void onAlreadyRunning() {
         ui.access(() -> Notification.show("Detection is already in progress"));
     }

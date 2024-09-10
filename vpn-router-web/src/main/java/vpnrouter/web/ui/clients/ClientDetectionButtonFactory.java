@@ -16,7 +16,7 @@ public class ClientDetectionButtonFactory {
         var detectionButton = new Button(VaadinIcon.REFRESH.create());
         detectionButton.addClickListener(event -> {
                     UI ui = event.getSource().getUI().orElseThrow();
-                    clientDetectionService.detectAndSave(new CompetitionListenerImpl(ui));
+                    clientDetectionService.detectAndSave(new StartListenerImpl(ui), new CompetitionListenerImpl(ui));
                 }
         );
         return detectionButton;

@@ -2,10 +2,13 @@ package vpnrouter.api.client;
 
 public interface ClientDetectionService {
 
-    void detectAndSave(CompletionListener completionListener);
+    void detectAndSave(StartListener startListener, CompletionListener completionListener);
+
+    interface StartListener {
+        void onStart();
+    }
 
     interface CompletionListener {
-        void onStart();
 
         void onAlreadyRunning();
 

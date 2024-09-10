@@ -13,10 +13,11 @@ public class ClientDetectionScheduler {
 
     @Scheduled(fixedRateString = "PT30m")
     public void detectAndSave() {
-        clientDetectionService.detectAndSave(new ClientDetectionService.CompletionListener() {
+        clientDetectionService.detectAndSave(new ClientDetectionService.StartListener() {
             @Override
             public void onStart() {
             }
+        }, new ClientDetectionService.CompletionListener() {
 
             @Override
             public void onAlreadyRunning() {
