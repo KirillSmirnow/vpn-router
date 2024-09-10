@@ -26,18 +26,18 @@ public class Client {
         return OBJECT_MAPPER.convertValue(client, Client.class);
     }
 
+    public static List<Client> from(List<ClientView> clients) {
+        return clients.stream()
+                .map(Client::from)
+                .toList();
+    }
+
     public ClientUpdate toClientUpdate() {
         return OBJECT_MAPPER.convertValue(this, ClientUpdate.class);
     }
 
     public ClientCreation toClientCreation() {
         return OBJECT_MAPPER.convertValue(this, ClientCreation.class);
-    }
-
-    public static List<Client> from(List<ClientView> clients) {
-        return clients.stream()
-                .map(Client::from)
-                .toList();
     }
 
     @Getter
