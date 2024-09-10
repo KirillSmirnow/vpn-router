@@ -36,7 +36,7 @@ public class ClientsPage extends AppLayout {
 
     private Button buildAddClientButton() {
         var button = new Button(VaadinIcon.PLUS.create());
-        button.addClickListener(event ->  getUI().ifPresent(ui -> ui.navigate(AddClientPage.class)));
+        button.addClickListener(event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class)));
         return button;
     }
 
