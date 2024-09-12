@@ -6,10 +6,12 @@ import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
+import vpnrouter.api.event.concrete.GeneralUpdateEvent;
 import vpnrouter.core.exception.UserException;
 import vpnrouter.core.service.EntityConverter;
 import vpnrouter.core.service.client.Client;
 import vpnrouter.core.service.client.ClientRepository;
+import vpnrouter.core.service.event.annotation.EventOnSuccess;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +34,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @EventOnSuccess(GeneralUpdateEvent.class)
     public void add(ClientCreation creation) {
         if (clientRepository.find(creation.getIpAddress()).isPresent()) {
             throw new UserException("Client already exists");
@@ -47,6 +50,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @EventOnSuccess(GeneralUpdateEvent.class)
     public void update(String ipAddress, ClientUpdate update) {
         var client = clientRepository.find(ipAddress)
                 .orElseThrow(() -> new UserException("Client not found"));
@@ -60,6 +64,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @EventOnSuccess(GeneralUpdateEvent.class)
     public void remove(String ipAddress) {
         var client = clientRepository.find(ipAddress)
                 .orElseThrow(() -> new UserException("Client not found"));
