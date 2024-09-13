@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import vpnrouter.api.client.ClientDetectionService;
+import vpnrouter.api.event.concrete.GeneralUpdateEvent;
 import vpnrouter.core.service.client.Client;
 import vpnrouter.core.service.client.ClientRepository;
+import vpnrouter.core.service.event.EventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
@@ -24,6 +26,7 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
 
     private final ClientRepository clientRepository;
     private final ClientDetector clientDetector;
+    private final EventPublisher eventPublisher;
 
     @Override
     public void detectAndSave(CompletionListener completionListener) {
@@ -64,6 +67,7 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
         } else {
             log.info("Detection completed: {} new clients found", newClientsCount);
             completionListener.onNewClientsFound(newClientsCount);
+            eventPublisher.publish(new GeneralUpdateEvent());
         }
     }
 
