@@ -5,13 +5,17 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.stereotype.Component;
-import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientService;
+import vpnrouter.web.model.Client;
 import vpnrouter.web.ui.clients.ClientsPage;
+import vpnrouter.web.validator.IpAddressValidator;
+import vpnrouter.web.validator.NameValidator;
 
 @UIScope
 @Component
@@ -33,21 +37,35 @@ public class AddClientPage extends VerticalLayout {
         ipAddressField.setRequired(true);
         nameField = new TextField("Name", "My Laptop");
         tunnelledCheckbox = new Checkbox("Tunnelled", true);
-        addButton = new Button("Add", $ -> {
-            addClient();
-            getUI().ifPresent(ui -> ui.navigate(ClientsPage.class));
-            Notification.show("Client added");
-        });
+        var binder = buildBinder();
+        addButton = new Button("Add", event -> validateAndAdd(binder));
         cancelButton = new Button("Cancel", event -> getUI().ifPresent(ui -> ui.navigate(ClientsPage.class)));
         add(ipAddressField, nameField, tunnelledCheckbox, addButton, cancelButton);
     }
 
-    private void addClient() {
-        var clientCreation = ClientCreation.builder()
-                .ipAddress(ipAddressField.getOptionalValue().orElse(null))
-                .name(nameField.getOptionalValue().orElse(null))
-                .tunnelled(tunnelledCheckbox.getValue())
-                .build();
-        clientService.add(clientCreation);
+    private Binder<Client.Wrapper> buildBinder() {
+        var binder = new Binder<>(Client.Wrapper.class);
+        binder.forField(ipAddressField)
+                .withValidator(new IpAddressValidator())
+                .bind(Client.Wrapper::getIpAddress, Client.Wrapper::setIpAddress);
+        binder.forField(nameField)
+                .withValidator(new NameValidator())
+                .bind(Client.Wrapper::getName, Client.Wrapper::setName);
+        return binder;
+    }
+
+    private void validateAndAdd(Binder<Client.Wrapper> binder) {
+        var clientWrapper = new Client.Wrapper();
+        try {
+            if (binder.validate().isOk()) {
+                binder.writeBean(clientWrapper);
+                var client = clientWrapper.build();
+                clientService.add(client.toClientCreation());
+                getUI().ifPresent(ui -> ui.navigate(ClientsPage.class));
+                Notification.show("Client added");
+            }
+        } catch (ValidationException e) {
+            Notification.show("Validation failed: " + e.getMessage());
+        }
     }
 }

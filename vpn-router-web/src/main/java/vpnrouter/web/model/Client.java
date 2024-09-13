@@ -2,9 +2,8 @@ package vpnrouter.web.model;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.With;
+import lombok.*;
+import vpnrouter.api.client.ClientCreation;
 import vpnrouter.api.client.ClientUpdate;
 import vpnrouter.api.client.ClientView;
 
@@ -23,17 +22,33 @@ public class Client {
     @With
     private final boolean tunnelled;
 
+    public static Client from(ClientView client) {
+        return OBJECT_MAPPER.convertValue(client, Client.class);
+    }
+
     public static List<Client> from(List<ClientView> clients) {
         return clients.stream()
                 .map(Client::from)
                 .toList();
     }
 
-    public static Client from(ClientView client) {
-        return OBJECT_MAPPER.convertValue(client, Client.class);
-    }
-
     public ClientUpdate toClientUpdate() {
         return OBJECT_MAPPER.convertValue(this, ClientUpdate.class);
+    }
+
+    public ClientCreation toClientCreation() {
+        return OBJECT_MAPPER.convertValue(this, ClientCreation.class);
+    }
+
+    @Getter
+    @Setter
+    public static class Wrapper {
+        private String ipAddress;
+        private String name;
+        private boolean tunnelled;
+
+        public Client build() {
+            return new Client(ipAddress, name, tunnelled);
+        }
     }
 }
