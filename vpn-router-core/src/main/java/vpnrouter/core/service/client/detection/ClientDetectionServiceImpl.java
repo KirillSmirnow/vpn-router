@@ -51,6 +51,11 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
         }
     }
 
+    @Override
+    public boolean isInProgress() {
+        return detectionInProgress.get();
+    }
+
     private void executeTask() {
         eventPublisher.publish(new ClientDetectionStartedEvent());
         log.info("Detecting and saving clients");
