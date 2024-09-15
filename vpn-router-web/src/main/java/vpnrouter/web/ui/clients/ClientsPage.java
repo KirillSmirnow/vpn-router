@@ -7,12 +7,14 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vpnrouter.api.event.EventSubscriber;
 import vpnrouter.api.event.EventSubscriberRegistry;
 import vpnrouter.api.event.concrete.client.ClientDetectionClientsFoundEvent;
@@ -21,6 +23,7 @@ import vpnrouter.api.event.concrete.client.ClientDetectionFailureEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionStartedEvent;
 import vpnrouter.web.ui.AddClientPage;
 
+@Slf4j
 @UIScope
 @Route("")
 @CssImport("./styles/styles.css")
@@ -94,7 +97,11 @@ public class ClientsPage extends AppLayout {
         @Override
         public void receive(ClientDetectionClientsNotFoundEvent event) {
             try {
-                ui.access(() -> clientDetectionButton.setEnabled(true));
+                ui.access(() -> {
+                            Notification.show("Detection completed: no new clients found");
+                            clientDetectionButton.setEnabled(true);
+                        }
+                );
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionClientsNotFoundEvent.class, this);
             }
@@ -110,7 +117,12 @@ public class ClientsPage extends AppLayout {
         @Override
         public void receive(ClientDetectionClientsFoundEvent event) {
             try {
-                ui.access(() -> clientDetectionButton.setEnabled(true));
+                var newClientsCount = event.getNewClientsCount();
+                ui.access(() -> {
+                            Notification.show("Detection completed: %s new clients found".formatted(newClientsCount));
+                            clientDetectionButton.setEnabled(true);
+                        }
+                );
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionClientsFoundEvent.class, this);
             }
@@ -126,9 +138,15 @@ public class ClientsPage extends AppLayout {
         @Override
         public void receive(ClientDetectionFailureEvent event) {
             try {
-                ui.access(() -> clientDetectionButton.setEnabled(true));
+                var exception = event.getException();
+                ui.access(() -> {
+                    Notification.show("Detection error: " + exception.getMessage());
+                    clientDetectionButton.setEnabled(true);
+                });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionFailureEvent.class, this);
+            } catch (Exception e) {
+                throw e;
             }
         }
     }
