@@ -13,22 +13,6 @@ public class ClientDetectionScheduler {
 
     @Scheduled(fixedRateString = "PT30m")
     public void detectAndSave() {
-        clientDetectionService.detectAndSave(new ClientDetectionService.CompletionListener() {
-            @Override
-            public void onAlreadyRunning() {
-            }
-
-            @Override
-            public void onNewClientsNotFound() {
-            }
-
-            @Override
-            public void onNewClientsFound(int newClientsCount) {
-            }
-
-            @Override
-            public void onFailure(Exception exception) {
-            }
-        });
+        clientDetectionService.detectAndSave();
     }
 }
