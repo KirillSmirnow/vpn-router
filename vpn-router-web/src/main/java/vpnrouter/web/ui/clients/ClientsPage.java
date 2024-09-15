@@ -11,6 +11,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -142,11 +143,10 @@ public class ClientsPage extends AppLayout {
                 ui.access(() -> {
                     Notification.show("Detection error: " + exception.getMessage());
                     clientDetectionButton.setEnabled(true);
+                    throw new RuntimeException(exception);
                 });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionFailureEvent.class, this);
-            } catch (Exception e) {
-                throw e;
             }
         }
     }
