@@ -8,8 +8,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -39,12 +41,15 @@ public class ClientsPage extends AppLayout {
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
         var clientDetectionButton = buildDetectClientButton();
-        var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton);
-        var layout = new VerticalLayout(buttons, grid);
-        registerDetectionStartedHandler(clientDetectionButton);
-        registerClientsNotFoundHandler(clientDetectionButton);
-        registerClientsFoundHandler(clientDetectionButton);
-        registerDetectionFailedHandler(clientDetectionButton);
+        var progressBar = new ProgressBar();
+        progressBar.setVisible(false);
+        progressBar.setIndeterminate(true);
+        var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton, progressBar);
+        var layout = new VerticalLayout(buttons, progressBar, grid);
+        registerDetectionStartedHandler(clientDetectionButton, progressBar);
+        registerClientsNotFoundHandler(clientDetectionButton, progressBar);
+        registerClientsFoundHandler(clientDetectionButton, progressBar);
+        registerDetectionFailedHandler(clientDetectionButton, progressBar);
         layout.setHeightFull();
         setContent(layout);
     }
@@ -61,31 +66,31 @@ public class ClientsPage extends AppLayout {
         return button;
     }
 
-    private void registerDetectionStartedHandler(Button clientDetectionButton) {
+    private void registerDetectionStartedHandler(Button clientDetectionButton, ProgressBar progressBar) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionStartedEvent.class,
-                new DetectionStartedHandler(UI.getCurrent(), clientDetectionButton)
+                new DetectionStartedHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
     }
 
-    private void registerClientsNotFoundHandler(Button clientDetectionButton) {
+    private void registerClientsNotFoundHandler(Button clientDetectionButton, ProgressBar progressBar) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsNotFoundEvent.class,
-                new ClientsNotFoundHandler(UI.getCurrent(), clientDetectionButton)
+                new ClientsNotFoundHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
     }
 
-    private void registerClientsFoundHandler(Button clientDetectionButton) {
+    private void registerClientsFoundHandler(Button clientDetectionButton, ProgressBar progressBar) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsFoundEvent.class,
-                new ClientsFoundHandler(UI.getCurrent(), clientDetectionButton)
+                new ClientsFoundHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
     }
 
-    private void registerDetectionFailedHandler(Button clientDetectionButton) {
+    private void registerDetectionFailedHandler(Button clientDetectionButton, ProgressBar progressBar) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionFailureEvent.class,
-                new DetectionFailureHandler(UI.getCurrent(), clientDetectionButton)
+                new DetectionFailureHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
     }
 
@@ -94,6 +99,7 @@ public class ClientsPage extends AppLayout {
     private class ClientsNotFoundHandler implements EventSubscriber<ClientDetectionClientsNotFoundEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionClientsNotFoundEvent event) {
@@ -101,6 +107,7 @@ public class ClientsPage extends AppLayout {
                 ui.access(() -> {
                             Notification.show("Detection completed: no new clients found");
                             clientDetectionButton.setEnabled(true);
+                            progressBar.setVisible(false);
                         }
                 );
             } catch (UIDetachedException e) {
@@ -114,6 +121,7 @@ public class ClientsPage extends AppLayout {
     private class ClientsFoundHandler implements EventSubscriber<ClientDetectionClientsFoundEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionClientsFoundEvent event) {
@@ -122,6 +130,7 @@ public class ClientsPage extends AppLayout {
                 ui.access(() -> {
                             Notification.show("Detection completed: %s new clients found".formatted(newClientsCount));
                             clientDetectionButton.setEnabled(true);
+                            progressBar.setVisible(false);
                         }
                 );
             } catch (UIDetachedException e) {
@@ -135,14 +144,15 @@ public class ClientsPage extends AppLayout {
     private class DetectionFailureHandler implements EventSubscriber<ClientDetectionFailureEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionFailureEvent event) {
             try {
                 var exception = event.getException();
                 ui.access(() -> {
-                    Notification.show("Detection error: " + exception.getMessage());
                     clientDetectionButton.setEnabled(true);
+                    progressBar.setVisible(false);
                     throw new RuntimeException(exception);
                 });
             } catch (UIDetachedException e) {
@@ -156,11 +166,12 @@ public class ClientsPage extends AppLayout {
     private class DetectionStartedHandler implements EventSubscriber<ClientDetectionStartedEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionStartedEvent event) {
             try {
-                ui.access(() -> clientDetectionButton.setEnabled(false));
+                ui.access(() -> {clientDetectionButton.setEnabled(false); progressBar.setVisible(true);});
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionStartedEvent.class, this);
             }
