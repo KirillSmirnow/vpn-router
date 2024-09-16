@@ -8,12 +8,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -35,15 +33,14 @@ public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
     private final ClientDetectionButtonFactory clientDetectionButtonFactory;
+    private final ProgressBarFactory progressBarFactory;
     private final EventSubscriberRegistry eventSubscriberRegistry;
 
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
         var clientDetectionButton = buildDetectClientButton();
-        var progressBar = new ProgressBar();
-        progressBar.setVisible(false);
-        progressBar.setIndeterminate(true);
+        var progressBar = progressBarFactory.build();
         var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton, progressBar);
         var layout = new VerticalLayout(buttons, progressBar, grid);
         registerDetectionStartedHandler(clientDetectionButton, progressBar);
@@ -171,7 +168,10 @@ public class ClientsPage extends AppLayout {
         @Override
         public void receive(ClientDetectionStartedEvent event) {
             try {
-                ui.access(() -> {clientDetectionButton.setEnabled(false); progressBar.setVisible(true);});
+                ui.access(() -> {
+                    clientDetectionButton.setEnabled(false);
+                    progressBar.setVisible(true);
+                });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionStartedEvent.class, this);
             }
