@@ -39,7 +39,7 @@ public class ClientsPage extends AppLayout {
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
-        var clientDetectionButton = buildDetectClientButton();
+        var clientDetectionButton = clientDetectionButtonFactory.build();
         var progressBar = progressBarFactory.build();
         var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton, progressBar);
         var layout = new VerticalLayout(buttons, progressBar, grid);
@@ -54,12 +54,6 @@ public class ClientsPage extends AppLayout {
     private Button buildAddClientButton() {
         var button = new Button(VaadinIcon.PLUS.create());
         button.addClickListener(event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class)));
-        return button;
-    }
-
-    private Button buildDetectClientButton() {
-        var button = clientDetectionButtonFactory.build();
-        button.setEnabled(!clientDetectionButtonFactory.isDetectionInProgress());
         return button;
     }
 

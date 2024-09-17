@@ -17,8 +17,4 @@ public class ClientDetectionButtonFactory {
         detectionButton.setEnabled(!clientDetectionService.isInProgress());
         return detectionButton;
     }
-
-    public boolean isDetectionInProgress() {
-        return clientDetectionService.isInProgress();
-    }
 }
