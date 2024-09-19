@@ -36,11 +36,10 @@ public class ClientDetectionFoundEventHandler {
             try {
                 var newClientsCount = event.getNewClientsCount();
                 ui.access(() -> {
-                            Notification.show("Detection completed: %s new clients found".formatted(newClientsCount));
-                            clientDetectionButton.setEnabled(true);
-                            progressBar.setVisible(false);
-                        }
-                );
+                    Notification.show("Detection completed: %s new clients found".formatted(newClientsCount));
+                    clientDetectionButton.setEnabled(true);
+                    progressBar.setVisible(false);
+                });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionClientsFoundEvent.class, this);
             }
