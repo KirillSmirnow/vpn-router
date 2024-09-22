@@ -7,14 +7,13 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vpnrouter.web.eventhandler.ClientDetectionFailureEventHandler;
-import vpnrouter.web.eventhandler.ClientDetectionFoundEventHandler;
-import vpnrouter.web.eventhandler.ClientDetectionNotFoundEventHandler;
-import vpnrouter.web.eventhandler.ClientDetectionStartedEventHandler;
+import vpnrouter.api.client.ClientDetectionService;
+import vpnrouter.api.event.EventSubscriberRegistry;
 import vpnrouter.web.ui.AddClientPage;
 
 @Slf4j
@@ -25,25 +24,19 @@ import vpnrouter.web.ui.AddClientPage;
 public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
-    private final ClientDetectionButtonFactory clientDetectionButtonFactory;
-    private final ProgressBarFactory progressBarFactory;
-    private final ClientDetectionStartedEventHandler clientDetectionStartedEventHandler;
-    private final ClientDetectionFoundEventHandler clientDetectionFoundEventHandler;
-    private final ClientDetectionNotFoundEventHandler clientDetectionNotFoundEventHandler;
-    private final ClientDetectionFailureEventHandler clientDetectionFailureEventHandler;
+    private final ClientDetectionService clientDetectionService;
+    private final EventSubscriberRegistry eventSubscriberRegistry;
 
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
-        var clientDetectionButton = clientDetectionButtonFactory.build();
-        var progressBar = progressBarFactory.build();
+        var clientDetectionButton = new Button(VaadinIcon.REFRESH.create());
+        var progressBar = new ProgressBar();
+        var clientDetectionEventHandler = new ClientDetectionEventHandler(clientDetectionService, eventSubscriberRegistry, clientDetectionButton, progressBar);
         var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton, progressBar);
         var layout = new VerticalLayout(buttons, progressBar, grid);
-        clientDetectionStartedEventHandler.register(clientDetectionButton, progressBar);
-        clientDetectionNotFoundEventHandler.register(clientDetectionButton, progressBar);
-        clientDetectionFoundEventHandler.register(clientDetectionButton, progressBar);
-        clientDetectionFailureEventHandler.register(clientDetectionButton, progressBar);
         layout.setHeightFull();
+        clientDetectionEventHandler.register();
         setContent(layout);
     }
 
