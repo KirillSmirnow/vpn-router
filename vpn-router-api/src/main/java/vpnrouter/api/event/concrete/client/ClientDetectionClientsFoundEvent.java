@@ -7,5 +7,5 @@ import vpnrouter.api.event.Event;
 @AllArgsConstructor
 @Getter
 public class ClientDetectionClientsFoundEvent implements Event {
-    private int newClientsCount;
+    private final int newClientsCount;
 }
