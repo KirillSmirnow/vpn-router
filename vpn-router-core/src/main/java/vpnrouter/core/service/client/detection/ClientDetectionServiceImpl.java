@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import vpnrouter.api.client.ClientDetectionService;
-import vpnrouter.api.event.concrete.*;
+import vpnrouter.api.event.concrete.GeneralUpdateEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionClientsFoundEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionClientsNotFoundEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionFailureEvent;
@@ -33,6 +33,11 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
     private final EventPublisher eventPublisher;
 
     @Override
+    public boolean isInProgress() {
+        return detectionInProgress.get();
+    }
+
+    @Override
     public void detectAndSave() {
         if (detectionInProgress.compareAndSet(false, true)) {
             executor.submit(() -> {
@@ -49,11 +54,6 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
         } else {
             log.info("Detection already running");
         }
-    }
-
-    @Override
-    public boolean isInProgress() {
-        return detectionInProgress.get();
     }
 
     private void executeTask() {
