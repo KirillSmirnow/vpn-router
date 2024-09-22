@@ -32,11 +32,16 @@ public class ClientsPage extends AppLayout {
         var grid = clientsGridFactory.build();
         var clientDetectionButton = new Button(VaadinIcon.REFRESH.create());
         var progressBar = new ProgressBar();
-        var clientDetectionEventHandler = new ClientDetectionEventHandler(clientDetectionService, eventSubscriberRegistry, clientDetectionButton, progressBar);
-        var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton, progressBar);
+        var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton);
         var layout = new VerticalLayout(buttons, progressBar, grid);
         layout.setHeightFull();
-        clientDetectionEventHandler.register();
+        var clientDetectionEventHandler = new ClientDetectionEventHandler(
+                clientDetectionService,
+                eventSubscriberRegistry,
+                clientDetectionButton,
+                progressBar
+        );
+        clientDetectionEventHandler.registerHandler();
         setContent(layout);
     }
 

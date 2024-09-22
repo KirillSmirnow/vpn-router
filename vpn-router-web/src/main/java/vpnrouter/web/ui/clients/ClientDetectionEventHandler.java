@@ -35,7 +35,7 @@ public class ClientDetectionEventHandler {
         progressBar.setIndeterminate(true);
     }
 
-    public void register() {
+    public void registerHandler() {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionStartedEvent.class,
                 new DetectionStartedHandler(UI.getCurrent())
@@ -82,7 +82,7 @@ public class ClientDetectionEventHandler {
             try {
                 var newClientsCount = event.getNewClientsCount();
                 ui.access(() -> {
-                    Notification.show("Detection completed: %s new clients found".formatted(newClientsCount));
+                    Notification.show("%d new clients found".formatted(newClientsCount));
                     clientDetectionButton.setEnabled(true);
                     progressBar.setVisible(false);
                 });
@@ -101,7 +101,7 @@ public class ClientDetectionEventHandler {
         public void receive(ClientDetectionClientsNotFoundEvent event) {
             try {
                 ui.access(() -> {
-                    Notification.show("Detection completed: no new clients found");
+                    Notification.show("No new clients found");
                     clientDetectionButton.setEnabled(true);
                     progressBar.setVisible(false);
                 });
