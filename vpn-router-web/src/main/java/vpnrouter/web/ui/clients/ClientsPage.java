@@ -12,8 +12,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vpnrouter.api.client.ClientDetectionService;
-import vpnrouter.api.event.EventSubscriberRegistry;
 import vpnrouter.web.ui.AddClientPage;
 
 @Slf4j
@@ -24,24 +22,17 @@ import vpnrouter.web.ui.AddClientPage;
 public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
-    private final ClientDetectionService clientDetectionService;
-    private final EventSubscriberRegistry eventSubscriberRegistry;
+    private final ClientDetectionEventHandler clientDetectionEventHandler;
 
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
         var clientDetectionButton = new Button(VaadinIcon.REFRESH.create());
         var progressBar = new ProgressBar();
+        clientDetectionEventHandler.registerHandler(clientDetectionButton, progressBar);
         var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton);
         var layout = new VerticalLayout(buttons, progressBar, grid);
         layout.setHeightFull();
-        var clientDetectionEventHandler = new ClientDetectionEventHandler(
-                clientDetectionService,
-                eventSubscriberRegistry,
-                clientDetectionButton,
-                progressBar
-        );
-        clientDetectionEventHandler.registerHandler();
         setContent(layout);
     }
 

@@ -7,6 +7,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientDetectionService;
 import vpnrouter.api.event.EventSubscriber;
 import vpnrouter.api.event.EventSubscriberRegistry;
@@ -15,42 +16,33 @@ import vpnrouter.api.event.concrete.client.ClientDetectionClientsNotFoundEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionFailureEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionStartedEvent;
 
+@Component
+@RequiredArgsConstructor
 public class ClientDetectionEventHandler {
-    private final Button clientDetectionButton;
-    private final ProgressBar progressBar;
+    private final ClientDetectionService clientDetectionService;
     private final EventSubscriberRegistry eventSubscriberRegistry;
 
-    public ClientDetectionEventHandler(
-            ClientDetectionService clientDetectionService,
-            EventSubscriberRegistry eventSubscriberRegistry,
-            Button clientDetectionButton,
-            ProgressBar progressBar
-    ) {
-        this.eventSubscriberRegistry = eventSubscriberRegistry;
-        this.clientDetectionButton = clientDetectionButton;
+    public void registerHandler(Button clientDetectionButton, ProgressBar progressBar) {
         clientDetectionButton.addClickListener(event -> clientDetectionService.detectAndSave());
         clientDetectionButton.setEnabled(!clientDetectionService.isInProgress());
-        this.progressBar = progressBar;
         progressBar.setVisible(clientDetectionService.isInProgress());
         progressBar.setIndeterminate(true);
-    }
 
-    public void registerHandler() {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionStartedEvent.class,
-                new DetectionStartedHandler(UI.getCurrent())
+                new DetectionStartedHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsFoundEvent.class,
-                new ClientsFoundHandler(UI.getCurrent())
+                new ClientsFoundHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsNotFoundEvent.class,
-                new ClientsNotFoundHandler(UI.getCurrent())
+                new ClientsNotFoundHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionFailureEvent.class,
-                new DetectionFailureHandler(UI.getCurrent())
+                new DetectionFailureHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
     }
 
@@ -58,6 +50,8 @@ public class ClientDetectionEventHandler {
     @EqualsAndHashCode(of = "ui")
     private class DetectionStartedHandler implements EventSubscriber<ClientDetectionStartedEvent> {
         private final UI ui;
+        private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionStartedEvent event) {
@@ -76,6 +70,8 @@ public class ClientDetectionEventHandler {
     @EqualsAndHashCode(of = "ui")
     private class ClientsFoundHandler implements EventSubscriber<ClientDetectionClientsFoundEvent> {
         private final UI ui;
+        private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionClientsFoundEvent event) {
@@ -96,6 +92,8 @@ public class ClientDetectionEventHandler {
     @EqualsAndHashCode(of = "ui")
     private class ClientsNotFoundHandler implements EventSubscriber<ClientDetectionClientsNotFoundEvent> {
         private final UI ui;
+        private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionClientsNotFoundEvent event) {
@@ -115,6 +113,8 @@ public class ClientDetectionEventHandler {
     @EqualsAndHashCode(of = "ui")
     private class DetectionFailureHandler implements EventSubscriber<ClientDetectionFailureEvent> {
         private final UI ui;
+        private final Button clientDetectionButton;
+        private final ProgressBar progressBar;
 
         @Override
         public void receive(ClientDetectionFailureEvent event) {
