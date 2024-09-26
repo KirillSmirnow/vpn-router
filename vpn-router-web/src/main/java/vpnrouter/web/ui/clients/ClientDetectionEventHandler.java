@@ -49,25 +49,25 @@ public class ClientDetectionEventHandler {
     public void registerHandler(Button clientDetectionButton, ProgressBar progressBar) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionStartedEvent.class,
-                new DetectionStartedHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new DetectionStartedEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsFoundEvent.class,
-                new ClientsFoundHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new ClientsFoundEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsNotFoundEvent.class,
-                new ClientsNotFoundHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new ClientsNotFoundEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionFailureEvent.class,
-                new DetectionFailureHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new DetectionFailureEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
         );
     }
 
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
-    private class DetectionStartedHandler implements EventSubscriber<ClientDetectionStartedEvent> {
+    private class DetectionStartedEventHandler implements EventSubscriber<ClientDetectionStartedEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
         private final ProgressBar progressBar;
@@ -87,7 +87,7 @@ public class ClientDetectionEventHandler {
 
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
-    private class ClientsFoundHandler implements EventSubscriber<ClientDetectionClientsFoundEvent> {
+    private class ClientsFoundEventHandler implements EventSubscriber<ClientDetectionClientsFoundEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
         private final ProgressBar progressBar;
@@ -109,7 +109,7 @@ public class ClientDetectionEventHandler {
 
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
-    private class ClientsNotFoundHandler implements EventSubscriber<ClientDetectionClientsNotFoundEvent> {
+    private class ClientsNotFoundEventHandler implements EventSubscriber<ClientDetectionClientsNotFoundEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
         private final ProgressBar progressBar;
@@ -130,7 +130,7 @@ public class ClientDetectionEventHandler {
 
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
-    private class DetectionFailureHandler implements EventSubscriber<ClientDetectionFailureEvent> {
+    private class DetectionFailureEventHandler implements EventSubscriber<ClientDetectionFailureEvent> {
         private final UI ui;
         private final Button clientDetectionButton;
         private final ProgressBar progressBar;
