@@ -3,9 +3,11 @@ package vpnrouter.web.ui.clients;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientDetectionService;
@@ -17,17 +19,34 @@ import vpnrouter.api.event.concrete.client.ClientDetectionFailureEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionStartedEvent;
 
 @Component
-@RequiredArgsConstructor
+@Getter
 public class ClientDetectionEventHandler {
     private final ClientDetectionService clientDetectionService;
     private final EventSubscriberRegistry eventSubscriberRegistry;
 
-    public void registerHandler(Button clientDetectionButton, ProgressBar progressBar) {
+    public ClientDetectionEventHandler(
+            ClientDetectionService clientDetectionService,
+            EventSubscriberRegistry eventSubscriberRegistry
+    ) {
+        this.clientDetectionService = clientDetectionService;
+        this.eventSubscriberRegistry = eventSubscriberRegistry;
+    }
+
+    public Button buildClientDetectionButton() {
+        var clientDetectionButton = new Button(VaadinIcon.REFRESH.create());
         clientDetectionButton.addClickListener(event -> clientDetectionService.detectAndSave());
         clientDetectionButton.setEnabled(!clientDetectionService.isInProgress());
+        return clientDetectionButton;
+    }
+
+    public ProgressBar buildProgressBar() {
+        var progressBar = new ProgressBar();
         progressBar.setVisible(clientDetectionService.isInProgress());
         progressBar.setIndeterminate(true);
+        return progressBar;
+    }
 
+    public void registerHandler(Button clientDetectionButton, ProgressBar progressBar) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionStartedEvent.class,
                 new DetectionStartedHandler(UI.getCurrent(), clientDetectionButton, progressBar)

@@ -7,7 +7,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +26,11 @@ public class ClientsPage extends AppLayout {
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
-        var clientDetectionButton = new Button(VaadinIcon.REFRESH.create());
-        var progressBar = new ProgressBar();
-        clientDetectionEventHandler.registerHandler(clientDetectionButton, progressBar);
+        var clientDetectionButton = clientDetectionEventHandler.buildClientDetectionButton();
+        var progressBar = clientDetectionEventHandler.buildProgressBar();
         var buttons = new HorizontalLayout(buildAddClientButton(), clientDetectionButton);
         var layout = new VerticalLayout(buttons, progressBar, grid);
+        clientDetectionEventHandler.registerHandler(clientDetectionButton, progressBar);
         layout.setHeightFull();
         setContent(layout);
     }
