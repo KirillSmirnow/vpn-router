@@ -4,11 +4,14 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
 import vpnrouter.web.ui.AddClientPage;
+import vpnrouter.web.ui.clients.detection.ClientDetectionComponentFactory;
 
 @UIScope
 @Route("")
@@ -17,19 +20,24 @@ import vpnrouter.web.ui.AddClientPage;
 public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
+    private final ClientDetectionComponentFactory clientDetectionComponentFactory;
 
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
-        var layout = new VerticalLayout(grid, buildAddClientButton());
+        var clientDetectionComponent = clientDetectionComponentFactory.build();
+        var layout = new VerticalLayout(
+                new HorizontalLayout(buildAddClientButton(), clientDetectionComponent.getStartButton()),
+                clientDetectionComponent.getProgressBar(),
+                grid
+        );
         layout.setHeightFull();
         setContent(layout);
     }
 
     private Button buildAddClientButton() {
-        return new Button(
-                "Add client",
-                event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class))
-        );
+        var button = new Button(VaadinIcon.PLUS.create());
+        button.addClickListener(event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class)));
+        return button;
     }
 }

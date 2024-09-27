@@ -5,6 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import vpnrouter.api.client.ClientDetectionService;
 import vpnrouter.api.event.concrete.GeneralUpdateEvent;
+import vpnrouter.api.event.concrete.client.ClientDetectionClientsFoundEvent;
+import vpnrouter.api.event.concrete.client.ClientDetectionClientsNotFoundEvent;
+import vpnrouter.api.event.concrete.client.ClientDetectionFailureEvent;
+import vpnrouter.api.event.concrete.client.ClientDetectionStartedEvent;
 import vpnrouter.core.service.client.Client;
 import vpnrouter.core.service.client.ClientRepository;
 import vpnrouter.core.service.event.EventPublisher;
@@ -29,14 +33,19 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
     private final EventPublisher eventPublisher;
 
     @Override
-    public void detectAndSave(CompletionListener completionListener) {
+    public boolean isInProgress() {
+        return detectionInProgress.get();
+    }
+
+    @Override
+    public void detectAndSave() {
         if (detectionInProgress.compareAndSet(false, true)) {
             executor.submit(() -> {
                 try {
-                    executeTask(completionListener);
+                    executeTask();
                 } catch (Exception e) {
                     log.warn("Detection failure: {}", e.getMessage(), e);
-                    completionListener.onFailure(e);
+                    eventPublisher.publish(new ClientDetectionFailureEvent(e));
                 } finally {
                     detectionInProgress.set(false);
                 }
@@ -44,11 +53,11 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
             log.info("Detection task submitted");
         } else {
             log.info("Detection already running");
-            completionListener.onAlreadyRunning();
         }
     }
 
-    private void executeTask(CompletionListener completionListener) {
+    private void executeTask() {
+        eventPublisher.publish(new ClientDetectionStartedEvent());
         log.info("Detecting and saving clients");
         var detectedIpAddresses = clientDetector.detectIpAddresses();
         var existingIpAddresses = clientRepository.findAll().stream()
@@ -63,10 +72,10 @@ public class ClientDetectionServiceImpl implements ClientDetectionService {
         }
         if (newClientsCount == 0) {
             log.info("Detection completed: new clients not found");
-            completionListener.onNewClientsNotFound();
+            eventPublisher.publish(new ClientDetectionClientsNotFoundEvent());
         } else {
             log.info("Detection completed: {} new clients found", newClientsCount);
-            completionListener.onNewClientsFound(newClientsCount);
+            eventPublisher.publish(new ClientDetectionClientsFoundEvent(newClientsCount));
             eventPublisher.publish(new GeneralUpdateEvent());
         }
     }
