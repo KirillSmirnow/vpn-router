@@ -10,11 +10,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import vpnrouter.web.ui.AddClientPage;
 import vpnrouter.web.ui.clients.detection.ClientDetectionComponentFactory;
 
-@Slf4j
 @UIScope
 @Route("")
 @CssImport("./styles/styles.css")
