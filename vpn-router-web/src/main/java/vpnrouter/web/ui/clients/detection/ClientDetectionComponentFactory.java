@@ -1,13 +1,9 @@
-package vpnrouter.web.ui.clients;
+package vpnrouter.web.ui.clients.detection;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientDetectionService;
@@ -17,67 +13,53 @@ import vpnrouter.api.event.concrete.client.ClientDetectionClientsFoundEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionClientsNotFoundEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionFailureEvent;
 import vpnrouter.api.event.concrete.client.ClientDetectionStartedEvent;
+import vpnrouter.web.ui.clients.detection.ClientDetectionComponent.State;
 
 @Component
-@Getter
-public class ClientDetectionEventHandler {
+@RequiredArgsConstructor
+public class ClientDetectionComponentFactory {
+
     private final ClientDetectionService clientDetectionService;
     private final EventSubscriberRegistry eventSubscriberRegistry;
 
-    public ClientDetectionEventHandler(
-            ClientDetectionService clientDetectionService,
-            EventSubscriberRegistry eventSubscriberRegistry
-    ) {
-        this.clientDetectionService = clientDetectionService;
-        this.eventSubscriberRegistry = eventSubscriberRegistry;
+    public ClientDetectionComponent build() {
+        var initialState = clientDetectionService.isInProgress() ? State.IN_PROGRESS : State.IDLE;
+        var clientDetectionComponent = new ClientDetectionComponent(initialState, clientDetectionService::detectAndSave);
+        registerHandlers(clientDetectionComponent);
+        return clientDetectionComponent;
     }
 
-    public Button buildClientDetectionButton() {
-        var clientDetectionButton = new Button(VaadinIcon.REFRESH.create());
-        clientDetectionButton.addClickListener(event -> clientDetectionService.detectAndSave());
-        clientDetectionButton.setEnabled(!clientDetectionService.isInProgress());
-        return clientDetectionButton;
-    }
-
-    public ProgressBar buildProgressBar() {
-        var progressBar = new ProgressBar();
-        progressBar.setVisible(clientDetectionService.isInProgress());
-        progressBar.setIndeterminate(true);
-        return progressBar;
-    }
-
-    public void registerHandler(Button clientDetectionButton, ProgressBar progressBar) {
+    private void registerHandlers(ClientDetectionComponent clientDetectionComponent) {
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionStartedEvent.class,
-                new DetectionStartedEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new DetectionStartedEventHandler(UI.getCurrent(), clientDetectionComponent)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsFoundEvent.class,
-                new ClientsFoundEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new ClientsFoundEventHandler(UI.getCurrent(), clientDetectionComponent)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionClientsNotFoundEvent.class,
-                new ClientsNotFoundEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new ClientsNotFoundEventHandler(UI.getCurrent(), clientDetectionComponent)
         );
         eventSubscriberRegistry.addSubscriber(
                 ClientDetectionFailureEvent.class,
-                new DetectionFailureEventHandler(UI.getCurrent(), clientDetectionButton, progressBar)
+                new DetectionFailureEventHandler(UI.getCurrent(), clientDetectionComponent)
         );
     }
 
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
     private class DetectionStartedEventHandler implements EventSubscriber<ClientDetectionStartedEvent> {
+
         private final UI ui;
-        private final Button clientDetectionButton;
-        private final ProgressBar progressBar;
+        private final ClientDetectionComponent clientDetectionComponent;
 
         @Override
         public void receive(ClientDetectionStartedEvent event) {
             try {
                 ui.access(() -> {
-                    clientDetectionButton.setEnabled(false);
-                    progressBar.setVisible(true);
+                    clientDetectionComponent.setState(State.IN_PROGRESS);
                 });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionStartedEvent.class, this);
@@ -88,9 +70,9 @@ public class ClientDetectionEventHandler {
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
     private class ClientsFoundEventHandler implements EventSubscriber<ClientDetectionClientsFoundEvent> {
+
         private final UI ui;
-        private final Button clientDetectionButton;
-        private final ProgressBar progressBar;
+        private final ClientDetectionComponent clientDetectionComponent;
 
         @Override
         public void receive(ClientDetectionClientsFoundEvent event) {
@@ -98,8 +80,7 @@ public class ClientDetectionEventHandler {
                 var newClientsCount = event.getNewClientsCount();
                 ui.access(() -> {
                     Notification.show("%d new clients found".formatted(newClientsCount));
-                    clientDetectionButton.setEnabled(true);
-                    progressBar.setVisible(false);
+                    clientDetectionComponent.setState(State.IDLE);
                 });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionClientsFoundEvent.class, this);
@@ -110,17 +91,16 @@ public class ClientDetectionEventHandler {
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
     private class ClientsNotFoundEventHandler implements EventSubscriber<ClientDetectionClientsNotFoundEvent> {
+
         private final UI ui;
-        private final Button clientDetectionButton;
-        private final ProgressBar progressBar;
+        private final ClientDetectionComponent clientDetectionComponent;
 
         @Override
         public void receive(ClientDetectionClientsNotFoundEvent event) {
             try {
                 ui.access(() -> {
                     Notification.show("No new clients found");
-                    clientDetectionButton.setEnabled(true);
-                    progressBar.setVisible(false);
+                    clientDetectionComponent.setState(State.IDLE);
                 });
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(ClientDetectionClientsNotFoundEvent.class, this);
@@ -131,17 +111,16 @@ public class ClientDetectionEventHandler {
     @RequiredArgsConstructor
     @EqualsAndHashCode(of = "ui")
     private class DetectionFailureEventHandler implements EventSubscriber<ClientDetectionFailureEvent> {
+
         private final UI ui;
-        private final Button clientDetectionButton;
-        private final ProgressBar progressBar;
+        private final ClientDetectionComponent clientDetectionComponent;
 
         @Override
         public void receive(ClientDetectionFailureEvent event) {
             try {
                 var exception = event.getException();
                 ui.access(() -> {
-                    clientDetectionButton.setEnabled(true);
-                    progressBar.setVisible(false);
+                    clientDetectionComponent.setState(State.IDLE);
                     throw new RuntimeException(exception);
                 });
             } catch (UIDetachedException e) {
