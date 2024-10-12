@@ -17,7 +17,7 @@ public class LocationComponent {
     public void setState(String ipAddress, String location) {
         var text = "Your location: %s (%s)".formatted(location, ipAddress);
         this.location.setValue(text);
-//        this.location.setWidth(text.length() + "ch");
+        this.location.setWidth(text.length() + "ch");
     }
 
     private TextField buildTextField() {
