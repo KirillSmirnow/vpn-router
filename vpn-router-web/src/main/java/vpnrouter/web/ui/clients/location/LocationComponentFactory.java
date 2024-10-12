@@ -9,6 +9,7 @@ import vpnrouter.api.event.EventSubscriber;
 import vpnrouter.api.event.EventSubscriberRegistry;
 import vpnrouter.api.event.concrete.GeneralUpdateEvent;
 import vpnrouter.api.location.LocationService;
+import vpnrouter.core.service.event.annotation.EventOnSuccess;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -20,8 +21,9 @@ public class LocationComponentFactory {
     private final LocationService locationService;
     private final EventSubscriberRegistry eventSubscriberRegistry;
 
+    @EventOnSuccess(GeneralUpdateEvent.class)
     public LocationComponent build(String ipAddress) {
-        String location = locationService.getLocation(ipAddress).orElseThrow();
+        String location = locationService.getLocation(ipAddress).orElse("");
         LocationComponent locationComponent = new LocationComponent(ipAddress, location);
         eventSubscriberRegistry.addSubscriber(
                 GeneralUpdateEvent.class,

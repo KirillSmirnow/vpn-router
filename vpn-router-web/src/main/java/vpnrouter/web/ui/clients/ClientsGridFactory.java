@@ -2,6 +2,7 @@ package vpnrouter.web.ui.clients;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.binder.Binder;
 import lombok.EqualsAndHashCode;
@@ -15,6 +16,7 @@ import vpnrouter.api.event.concrete.GeneralUpdateEvent;
 import vpnrouter.web.model.Client;
 import vpnrouter.web.utility.UiUtility;
 
+@CssImport("./styles/styles.css")
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class ClientsGridFactory {
 
     public Grid<Client> build() {
         var grid = new Grid<Client>();
+        grid.setClassName("custom-grid-text");
         createEditor(grid);
         addIpAddressField(grid);
         addNameField(grid);
