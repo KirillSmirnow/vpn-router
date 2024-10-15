@@ -11,6 +11,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
 import vpnrouter.web.ui.AddClientPage;
+import vpnrouter.web.ui.clients.detection.ClientDetectionComponent;
 import vpnrouter.web.ui.clients.detection.ClientDetectionComponentFactory;
 import vpnrouter.web.ui.clients.location.LocationComponentFactory;
 
@@ -27,22 +28,27 @@ public class ClientsPage extends AppLayout {
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
         var clientDetectionComponent = clientDetectionComponentFactory.build();
-        var locationComponent = locationComponentFactory.build().getLocationField();
-        var buttonsLayout = new HorizontalLayout(buildAddClientButton(), clientDetectionComponent.getStartButton());
-        var horizontalLayout = new HorizontalLayout();
-        horizontalLayout.setWidthFull();
-        horizontalLayout.setPadding(false);
-        horizontalLayout.setMargin(false);
-        horizontalLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        horizontalLayout.add(buttonsLayout, locationComponent);
         var layout = new VerticalLayout(
-                horizontalLayout,
+                buildTopBar(clientDetectionComponent),
                 clientDetectionComponent.getProgressBar(),
                 grid
         );
         layout.setHeightFull();
         setContent(layout);
+    }
+
+    private HorizontalLayout buildTopBar(ClientDetectionComponent clientDetectionComponent) {
+        var horizontalLayout = new HorizontalLayout(
+                buildAddClientButton(),
+                clientDetectionComponent.getStartButton(),
+                locationComponentFactory.build().getLocationField()
+        );
+        horizontalLayout.setWidthFull();
+        horizontalLayout.setPadding(false);
+        horizontalLayout.setMargin(false);
+        horizontalLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        return horizontalLayout;
     }
 
     private Button buildAddClientButton() {

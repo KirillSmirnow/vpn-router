@@ -19,26 +19,24 @@ public class LocationComponentFactory {
 
     public LocationComponent build() {
         var locationComponent = new LocationComponent();
+        updateLocation(UI.getCurrent(), locationComponent);
         eventSubscriberRegistry.addSubscriber(
                 GeneralUpdateEvent.class,
                 new GeneralUpdateEventHandler(UI.getCurrent(), locationComponent)
         );
-        updateLocation(UI.getCurrent(), locationComponent);
         return locationComponent;
     }
 
     private void updateLocation(UI ui, LocationComponent locationComponent) {
-        ui.access(() -> {
-            ui.getPage().executeJs("""
-                    var request = new XMLHttpRequest();
-                    request.open("GET", "http://ip.cucurum.ru", false); // false for synchronous request
-                    request.send(null);
-                    return request.responseText;
-                    """).then(result -> {
-                var ipAddress = result.asString();
-                var location = locationService.getLocation(ipAddress).orElse("N/A");
-                locationComponent.setState(ipAddress, location);
-            });
+        ui.getPage().executeJs("""
+                var request = new XMLHttpRequest();
+                request.open("GET", "http://ip.cucurum.ru", false); // false for synchronous request
+                request.send(null);
+                return request.responseText;
+                """).then(result -> {
+            var ipAddress = result.asString();
+            var location = locationService.getLocation(ipAddress).orElse("N/A");
+            locationComponent.setState(ipAddress, location);
         });
     }
 
@@ -52,7 +50,7 @@ public class LocationComponentFactory {
         @Override
         public void receive(GeneralUpdateEvent event) {
             try {
-                updateLocation(ui, locationComponent);
+                ui.access(() -> updateLocation(ui, locationComponent));
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(GeneralUpdateEvent.class, this);
             }

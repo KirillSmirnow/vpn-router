@@ -14,17 +14,16 @@ public class LocationComponent {
         this.locationField = buildTextField();
     }
 
-    public void setState(String ipAddress, String location) {
-        var text = "Your location: %s (%s)".formatted(location, ipAddress);
-        this.locationField.setValue(text);
-        this.locationField.setWidth(text.length() + "ch");
-    }
-
     private TextField buildTextField() {
         var textField = new TextField();
         textField.setReadOnly(true);
         textField.addClassName("custom-text-field");
         textField.setMaxWidth("100%");
         return textField;
+    }
+
+    public void setState(String ipAddress, String location) {
+        var text = "Your location: %s (%s)".formatted(location, ipAddress);
+        locationField.setValue(text);
     }
 }
