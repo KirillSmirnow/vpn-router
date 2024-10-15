@@ -27,7 +27,7 @@ public class ClientsPage extends AppLayout {
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
         var clientDetectionComponent = clientDetectionComponentFactory.build();
-        var locationComponent = locationComponentFactory.build("").getLocation();
+        var locationComponent = locationComponentFactory.build().getLocationField();
         var buttonsLayout = new HorizontalLayout(buildAddClientButton(), clientDetectionComponent.getStartButton());
         var horizontalLayout = new HorizontalLayout();
         horizontalLayout.setWidthFull();
