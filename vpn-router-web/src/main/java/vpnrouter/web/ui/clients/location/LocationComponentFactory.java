@@ -16,28 +16,18 @@ public class LocationComponentFactory {
 
     private final LocationService locationService;
     private final EventSubscriberRegistry eventSubscriberRegistry;
+    private LocationUpdater locationUpdater;
 
     public LocationComponent build() {
         var locationComponent = new LocationComponent();
-        updateLocation(UI.getCurrent(), locationComponent);
+        this.locationUpdater = new LocationUpdater(locationService);
+        locationUpdater.startScheduledTask(UI.getCurrent(), locationComponent);
+        locationUpdater.updateLocation(UI.getCurrent(), locationComponent);
         eventSubscriberRegistry.addSubscriber(
                 GeneralUpdateEvent.class,
                 new GeneralUpdateEventHandler(UI.getCurrent(), locationComponent)
         );
         return locationComponent;
-    }
-
-    private void updateLocation(UI ui, LocationComponent locationComponent) {
-        ui.getPage().executeJs("""
-                var request = new XMLHttpRequest();
-                request.open("GET", "http://ip.cucurum.ru", false); // false for synchronous request
-                request.send(null);
-                return request.responseText;
-                """).then(result -> {
-            var ipAddress = result.asString();
-            var location = locationService.getLocation(ipAddress).orElse("N/A");
-            locationComponent.setState(ipAddress, location);
-        });
     }
 
     @RequiredArgsConstructor
@@ -50,7 +40,7 @@ public class LocationComponentFactory {
         @Override
         public void receive(GeneralUpdateEvent event) {
             try {
-                ui.access(() -> updateLocation(ui, locationComponent));
+                ui.access(() -> locationUpdater.updateLocation(ui, locationComponent));
             } catch (UIDetachedException e) {
                 eventSubscriberRegistry.removeSubscriber(GeneralUpdateEvent.class, this);
             }
