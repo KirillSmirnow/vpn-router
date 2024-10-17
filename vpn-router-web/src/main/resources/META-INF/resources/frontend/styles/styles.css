@@ -15,9 +15,7 @@
 }
 
 .custom-text-field::part(input-field) {
-    border-style: solid;
-    border-color: #E6E6E6;
-    border-width: 1pt;
+    border-style: none;
     color: #333333;
     font-size: 16px;
     font-family: Arial, sans-serif;

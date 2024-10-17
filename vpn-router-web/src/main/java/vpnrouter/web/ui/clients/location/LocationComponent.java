@@ -2,6 +2,7 @@ package vpnrouter.web.ui.clients.location;
 
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
 import lombok.Getter;
 
 @CssImport("./styles/styles.css")
@@ -18,7 +19,9 @@ public class LocationComponent {
         var textField = new TextField();
         textField.setReadOnly(true);
         textField.addClassName("custom-text-field");
+        textField.setWidth("100%");
         textField.setMaxWidth("100%");
+        textField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         return textField;
     }
 
