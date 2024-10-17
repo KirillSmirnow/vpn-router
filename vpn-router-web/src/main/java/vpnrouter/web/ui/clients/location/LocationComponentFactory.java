@@ -21,8 +21,7 @@ public class LocationComponentFactory {
     public LocationComponent build() {
         var locationComponent = new LocationComponent();
         this.locationUpdater = new LocationUpdater(locationService);
-        locationUpdater.startScheduledTask(UI.getCurrent(), locationComponent);
-        locationUpdater.updateLocation(UI.getCurrent(), locationComponent);
+        locationUpdater.startScheduledUpdates(UI.getCurrent(), locationComponent);
         eventSubscriberRegistry.addSubscriber(
                 GeneralUpdateEvent.class,
                 new GeneralUpdateEventHandler(UI.getCurrent(), locationComponent)

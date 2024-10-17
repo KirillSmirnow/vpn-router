@@ -18,10 +18,10 @@ public class LocationUpdater {
         this.scheduler = Executors.newScheduledThreadPool(1);
     }
 
-    public void startScheduledTask(UI ui, LocationComponent locationComponent) {
+    public void startScheduledUpdates(UI ui, LocationComponent locationComponent) {
         scheduler.scheduleAtFixedRate(() -> {
             ui.access(() -> updateLocation(ui, locationComponent));
-            log.info("Location is updated according to the schedule");
+            log.info("Location has been updated according to the schedule");
         }, 0, 5, TimeUnit.SECONDS);
     }
 
