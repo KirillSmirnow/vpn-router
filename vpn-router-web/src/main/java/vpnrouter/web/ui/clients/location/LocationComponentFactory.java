@@ -8,19 +8,17 @@ import org.springframework.stereotype.Component;
 import vpnrouter.api.event.EventSubscriber;
 import vpnrouter.api.event.EventSubscriberRegistry;
 import vpnrouter.api.event.concrete.GeneralUpdateEvent;
-import vpnrouter.api.location.LocationService;
+import vpnrouter.web.ui.clients.location.updater.LocationUpdater;
 
 @Component
 @RequiredArgsConstructor
 public class LocationComponentFactory {
 
-    private final LocationService locationService;
+    private final LocationUpdater locationUpdater;
     private final EventSubscriberRegistry eventSubscriberRegistry;
-    private LocationUpdater locationUpdater;
 
     public LocationComponent build() {
         var locationComponent = new LocationComponent();
-        this.locationUpdater = new LocationUpdater(locationService);
         locationUpdater.startScheduledUpdates(UI.getCurrent(), locationComponent);
         eventSubscriberRegistry.addSubscriber(
                 GeneralUpdateEvent.class,
