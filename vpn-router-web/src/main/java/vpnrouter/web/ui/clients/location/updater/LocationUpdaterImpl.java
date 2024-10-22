@@ -7,9 +7,8 @@ import org.springframework.stereotype.Service;
 import vpnrouter.api.location.LocationService;
 import vpnrouter.web.ui.clients.location.LocationComponent;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -17,15 +16,25 @@ import java.util.concurrent.TimeUnit;
 public class LocationUpdaterImpl implements LocationUpdater {
     private final LocationService locationService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final Map<UI, Set<Future<?>>> futures = new ConcurrentHashMap<>();
 
     @Override
     public void startScheduledUpdates(UI ui, LocationComponent locationComponent) {
-        scheduler.scheduleAtFixedRate(
-                () -> ui.access(() -> updateLocation(ui, locationComponent)),
+        var future = scheduler.scheduleAtFixedRate(
+                () -> {
+                    try {
+                        ui.access(() -> updateLocation(ui, locationComponent));
+                    } catch (Exception e) {
+                        log.debug("Error updating location", e);
+                        futures.get(ui).forEach(unusedFuture -> unusedFuture.cancel(false));
+                        futures.remove(ui);
+                    }
+                },
                 0,
                 5,
                 TimeUnit.SECONDS
         );
+        futures.computeIfAbsent(ui, k -> ConcurrentHashMap.newKeySet()).add(future);
     }
 
     @Override
@@ -38,8 +47,8 @@ public class LocationUpdaterImpl implements LocationUpdater {
                 """).then(result -> {
             var ipAddress = result.asString();
             var location = locationService.getLocation(ipAddress).orElse("N/A");
-            log.info("Location has been updated by the schedule");
             locationComponent.setState(ipAddress, location);
+            log.info("Location has been updated by the schedule");
         });
     }
 }
