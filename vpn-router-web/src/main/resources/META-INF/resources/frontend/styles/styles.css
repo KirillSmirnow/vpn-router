@@ -13,3 +13,13 @@
     opacity: 1;
     pointer-events: none;
 }
+
+vaadin-dialog-overlay::part(content) {
+    background-color: #FFFFFF;
+    padding: 15px;
+}
+
+vaadin-dialog-overlay::part(footer) {
+    background-color: #FFFFFF;
+    padding: 15px;
+}
