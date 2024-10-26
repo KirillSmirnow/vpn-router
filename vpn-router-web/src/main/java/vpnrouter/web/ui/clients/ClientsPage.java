@@ -21,6 +21,7 @@ public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
     private final ClientDetectionComponentFactory clientDetectionComponentFactory;
+    private final AddClientDialog addClientDialog;
 
     @Override
     public void onAttach(AttachEvent event) {
@@ -37,7 +38,7 @@ public class ClientsPage extends AppLayout {
 
     private Button buildAddClientButton() {
         var button = new Button(VaadinIcon.PLUS.create());
-        button.addClickListener(event -> getUI().ifPresent(ui -> ui.navigate(AddClientPage.class)));
+        button.addClickListener(event -> addClientDialog.open());
         return button;
     }
 }
