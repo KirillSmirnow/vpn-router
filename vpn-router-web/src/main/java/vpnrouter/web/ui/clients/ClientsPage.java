@@ -10,7 +10,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
-import vpnrouter.web.ui.AddClientPage;
 import vpnrouter.web.ui.clients.detection.ClientDetectionComponentFactory;
 
 @UIScope
