@@ -3,8 +3,10 @@ package vpnrouter.web.validator;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
+import org.springframework.stereotype.Component;
 import vpnrouter.api.client.ClientConstraints;
 
+@Component
 public class NameValidator implements Validator<String> {
     @Override
     public ValidationResult apply(String value, ValueContext context) {

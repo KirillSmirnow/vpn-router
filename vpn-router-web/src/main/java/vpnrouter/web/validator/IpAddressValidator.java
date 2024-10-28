@@ -4,8 +4,10 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
 import jakarta.validation.ConstraintValidator;
+import org.springframework.stereotype.Component;
 import vpnrouter.api.validator.IpAddress;
 
+@Component
 public class IpAddressValidator implements Validator<String> {
     private final ConstraintValidator<IpAddress, String> ipAddressValidator;
 
