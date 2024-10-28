@@ -3,36 +3,52 @@ package vpnrouter.web.ui.clients;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.RequiredArgsConstructor;
 import vpnrouter.web.ui.AddClientPage;
+import vpnrouter.web.ui.clients.detection.ClientDetectionComponent;
 import vpnrouter.web.ui.clients.detection.ClientDetectionComponentFactory;
+import vpnrouter.web.ui.clients.location.LocationComponentFactory;
 
 @UIScope
 @Route("")
-@CssImport("./styles/styles.css")
 @RequiredArgsConstructor
 public class ClientsPage extends AppLayout {
 
     private final ClientsGridFactory clientsGridFactory;
     private final ClientDetectionComponentFactory clientDetectionComponentFactory;
+    private final LocationComponentFactory locationComponentFactory;
 
     @Override
     public void onAttach(AttachEvent event) {
         var grid = clientsGridFactory.build();
         var clientDetectionComponent = clientDetectionComponentFactory.build();
         var layout = new VerticalLayout(
-                new HorizontalLayout(buildAddClientButton(), clientDetectionComponent.getStartButton()),
+                buildTopBar(clientDetectionComponent),
                 clientDetectionComponent.getProgressBar(),
                 grid
         );
         layout.setHeightFull();
         setContent(layout);
+    }
+
+    private HorizontalLayout buildTopBar(ClientDetectionComponent clientDetectionComponent) {
+        var horizontalLayout = new HorizontalLayout(
+                buildAddClientButton(),
+                clientDetectionComponent.getStartButton(),
+                locationComponentFactory.build().getLocationField()
+        );
+        horizontalLayout.setWidthFull();
+        horizontalLayout.setPadding(false);
+        horizontalLayout.setMargin(false);
+        horizontalLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        return horizontalLayout;
     }
 
     private Button buildAddClientButton() {

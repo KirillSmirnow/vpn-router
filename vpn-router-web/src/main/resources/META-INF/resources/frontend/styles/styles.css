@@ -13,3 +13,30 @@
     opacity: 1;
     pointer-events: none;
 }
+
+.custom-text-field::part(input-field) {
+    border-style: none;
+    color: #333333;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+
+.custom-text-field::part(input-field)::after {
+    border-style: none;
+}
+
+.custom-grid-text {
+    color: #333333;
+    border-color: #E6E6E6;
+    border-width: 1pt;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+
+.custom-grid-text::part(header-cell) {
+    color: #333333;
+    border-color: #E6E6E6;
+    border-width: 1pt;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
