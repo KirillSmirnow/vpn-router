@@ -16,25 +16,25 @@ import java.util.concurrent.*;
 public class LocationUpdaterImpl implements LocationUpdater {
     private final LocationService locationService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final Map<UI, Set<Future<?>>> futures = new ConcurrentHashMap<>();
+    private final Map<UI, Set<Future<?>>> scheduledTasksByUis = new ConcurrentHashMap<>();
 
     @Override
     public void startScheduledUpdates(UI ui, LocationComponent locationComponent) {
-        var future = scheduler.scheduleAtFixedRate(
+        var newScheduledTask = scheduler.scheduleAtFixedRate(
                 () -> {
                     try {
                         ui.access(() -> updateLocation(ui, locationComponent));
                     } catch (Exception e) {
-                        log.debug("Error updating location", e);
-                        futures.get(ui).forEach(unusedFuture -> unusedFuture.cancel(false));
-                        futures.remove(ui);
+                        log.debug("Exception while updating location", e);
+                        scheduledTasksByUis.get(ui).forEach(unusedFuture -> unusedFuture.cancel(false));
+                        scheduledTasksByUis.remove(ui);
                     }
                 },
                 0,
                 5,
                 TimeUnit.SECONDS
         );
-        futures.computeIfAbsent(ui, k -> ConcurrentHashMap.newKeySet()).add(future);
+        scheduledTasksByUis.computeIfAbsent(ui, newUi -> ConcurrentHashMap.newKeySet()).add(newScheduledTask);
     }
 
     @Override
