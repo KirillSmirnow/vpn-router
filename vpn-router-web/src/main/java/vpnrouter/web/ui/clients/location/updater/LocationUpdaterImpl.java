@@ -26,7 +26,7 @@ public class LocationUpdaterImpl implements LocationUpdater {
                         ui.access(() -> updateLocation(ui, locationComponent));
                     } catch (Exception e) {
                         log.debug("Exception while updating location", e);
-                        scheduledTasksByUis.get(ui).forEach(unusedFuture -> unusedFuture.cancel(false));
+                        scheduledTasksByUis.get(ui).forEach(unusedTask -> unusedTask.cancel(false));
                         scheduledTasksByUis.remove(ui);
                     }
                 },
