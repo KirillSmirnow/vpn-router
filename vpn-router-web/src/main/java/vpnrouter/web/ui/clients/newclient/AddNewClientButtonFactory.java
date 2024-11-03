@@ -17,8 +17,13 @@ public class AddNewClientButtonFactory {
 
     public Button build() {
         var button = new Button(VaadinIcon.PLUS.create());
-        var dialog = new AddClientDialog(clientService, new AddClientDialogBinder(ipAddressValidator, nameValidator));
-        button.addClickListener(event -> dialog.open());
+        button.addClickListener(event -> {
+            var dialog = new AddClientDialog(
+                    clientService,
+                    new AddClientDialogBinder(ipAddressValidator, nameValidator)
+            );
+            dialog.open();
+        });
         return button;
     }
 }

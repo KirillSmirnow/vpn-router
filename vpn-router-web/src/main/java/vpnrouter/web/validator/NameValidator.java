@@ -10,6 +10,9 @@ import vpnrouter.api.client.ClientConstraints;
 public class NameValidator implements Validator<String> {
     @Override
     public ValidationResult apply(String value, ValueContext context) {
+        if (value == null) {
+            return ValidationResult.ok();
+        }
         if (value.length() < ClientConstraints.Name.MIN || value.length() > ClientConstraints.Name.MAX) {
             return ValidationResult.error(
                     "Name length should be from %d to %d"

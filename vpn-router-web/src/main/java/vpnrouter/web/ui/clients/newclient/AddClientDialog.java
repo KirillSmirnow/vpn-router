@@ -1,15 +1,16 @@
 package vpnrouter.web.ui.clients.newclient;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.ValidationException;
+import lombok.SneakyThrows;
 import vpnrouter.api.client.ClientService;
 import vpnrouter.web.model.Client;
 
@@ -41,7 +42,10 @@ public class AddClientDialog extends Dialog {
         var cancelButton = new Button("Cancel", event -> close());
         cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         add(new VerticalLayout(ipAddressField, nameField, tunnelledCheckbox));
-        getFooter().add(addButton, cancelButton);
+        HorizontalLayout buttonLayout = new HorizontalLayout(addButton, cancelButton);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        buttonLayout.setWidthFull();
+        getFooter().add(buttonLayout);
     }
 
     private void setStyle() {
@@ -55,19 +59,14 @@ public class AddClientDialog extends Dialog {
         binder.bindTunnelledCheckbox(tunnelledCheckbox);
     }
 
+    @SneakyThrows
     private void validateAndAdd() {
         if (binder.validate().isOk()) {
-            try {
-                var clientWrapper = new Client.Wrapper();
-                binder.writeBean(clientWrapper);
-                clientService.add(clientWrapper.build().toClientCreation());
-                UI.getCurrent().access(() -> {
-                    Notification.show("Client added");
-                    close();
-                });
-            } catch (ValidationException e) {
-                UI.getCurrent().access(() -> Notification.show("Validation failed: " + e.getMessage()));
-            }
+            var clientWrapper = new Client.Wrapper();
+            binder.writeBean(clientWrapper);
+            clientService.add(clientWrapper.build().toClientCreation());
+            Notification.show("Client added");
+            close();
         }
     }
 }
