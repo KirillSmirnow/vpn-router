@@ -10,7 +10,7 @@ import vpnrouter.web.validator.NameValidator;
 
 @Component
 @RequiredArgsConstructor
-public class AddNewClientButtonFactory {
+public class AddClientButtonFactory {
     private final ClientService clientService;
     private final IpAddressValidator ipAddressValidator;
     private final NameValidator nameValidator;

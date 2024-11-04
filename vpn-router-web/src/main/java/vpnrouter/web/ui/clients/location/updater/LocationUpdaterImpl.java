@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import vpnrouter.api.location.LocationService;
 import vpnrouter.web.ui.clients.location.LocationComponent;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 
 @Slf4j
