@@ -40,3 +40,13 @@
     font-size: 16px;
     font-family: Arial, sans-serif;
 }
+
+vaadin-dialog-overlay::part(content) {
+    background-color: #FFFFFF;
+    padding: 15px;
+}
+
+vaadin-dialog-overlay::part(footer) {
+    background-color: #FFFFFF;
+    padding: 15px;
+}

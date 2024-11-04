@@ -1,5 +1,6 @@
 package vpnrouter.api.client;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -14,6 +15,7 @@ public class ClientCreation {
     @IpAddress
     private final String ipAddress;
 
+    @Nullable
     @Size(min = ClientConstraints.Name.MIN, max = ClientConstraints.Name.MAX)
     private final String name;
 
