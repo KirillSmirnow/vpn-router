@@ -1,13 +1,9 @@
 package vpnrouter.web.ui.clients.newclient;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.SneakyThrows;
@@ -18,6 +14,7 @@ import vpnrouter.web.model.Client;
 public class AddClientDialog extends Dialog {
     private final ClientService clientService;
     private final AddClientDialogBinder binder;
+    private final ButtonsLayoutBuilder buttonsLayoutBuilder;
 
     private final TextField ipAddressField;
     private final TextField nameField;
@@ -26,6 +23,7 @@ public class AddClientDialog extends Dialog {
     public AddClientDialog(ClientService clientService, AddClientDialogBinder binder) {
         this.clientService = clientService;
         this.binder = binder;
+        this.buttonsLayoutBuilder = new ButtonsLayoutBuilder(this::validateAndAdd, this::close);
 
         setStyle();
 
@@ -36,21 +34,13 @@ public class AddClientDialog extends Dialog {
 
         setBinder();
 
-        var addButton = new Button("Add");
-        addButton.addClickListener(event -> validateAndAdd());
-        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        var cancelButton = new Button("Cancel", event -> close());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         add(new VerticalLayout(ipAddressField, nameField, tunnelledCheckbox));
-        HorizontalLayout buttonLayout = new HorizontalLayout(addButton, cancelButton);
-        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        buttonLayout.setWidthFull();
-        getFooter().add(buttonLayout);
     }
 
     private void setStyle() {
         setHeaderTitle("Add Client");
         setDraggable(true);
+        getFooter().add(buttonsLayoutBuilder.build());
     }
 
     private void setBinder() {
