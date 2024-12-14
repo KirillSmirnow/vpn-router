@@ -30,7 +30,7 @@ public class ClientsGridFactory {
 
     public Grid<Client> build() {
         var grid = new Grid<Client>();
-        grid.setClassName("custom-grid-text");
+        setStyles(grid);
         createEditor(grid);
         addIpAddressField(grid);
         addNameField(grid);
@@ -39,6 +39,15 @@ public class ClientsGridFactory {
         registerUpdateHandler(grid);
         refreshGrid(grid);
         return grid;
+    }
+
+    private void setStyles(Grid<Client> grid) {
+        grid.setClassName("custom-grid-text");
+        UiUtility.getCurrentClientIpAddress().ifPresent(currentClientIpAddress ->
+                grid.setClassNameGenerator(client ->
+                        client.getIpAddress().equals(currentClientIpAddress) ? "highlight" : null
+                )
+        );
     }
 
     private void createEditor(Grid<Client> grid) {
