@@ -16,7 +16,7 @@ import vpnrouter.api.event.concrete.GeneralUpdateEvent;
 import vpnrouter.web.model.Client;
 import vpnrouter.web.utility.UiUtility;
 
-@CssImport("./styles/styles.css")
+@CssImport(value = "./styles/styles.css", themeFor = "vaadin-grid")
 @Slf4j
 @Component
 @RequiredArgsConstructor
