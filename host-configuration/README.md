@@ -25,6 +25,7 @@ network:
 * `echo 1 >/proc/sys/net/ipv4/ip_forward`
 * `iptables -t filter --policy FORWARD ACCEPT`
 * `iptables -t nat -A POSTROUTING -o wg -j MASQUERADE`
+* `iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE`
 
 ## Install WireGuard
 
